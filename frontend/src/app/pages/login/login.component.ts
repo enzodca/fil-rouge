@@ -3,10 +3,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -27,8 +28,7 @@ export class LoginComponent {
   onSubmit() {
     this.auth.login(this.form.value).subscribe({
       next: () => {
-        alert('Connexion réussie !');
-        this.router.navigate(['/']); // redirige vers la home ou une page profil
+        this.router.navigate(['/accueil']);
       },
       error: err => alert('Erreur : ' + err.error.message)
     });
