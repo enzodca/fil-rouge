@@ -2,11 +2,13 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-accueil',
-  imports: [CommonModule],
+  imports: [ RouterLink,CommonModule],
   templateUrl: './accueil.component.html',
   styleUrl: './accueil.component.scss'
 })
@@ -17,11 +19,7 @@ export class AccueilComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit(): void {
-    this.http.get('http://localhost:3000/api/auth/me', {
-      headers: {
-        Authorization: `Bearer ${this.auth.getToken()}`
-      }
-    }).subscribe({
+    this.http.get(`${environment.apiUrl}/auth/me`).subscribe({
       next: user => this.user = user,
       error: () => this.router.navigate(['/login'])
     });

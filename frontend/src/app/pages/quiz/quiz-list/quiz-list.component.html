@@ -1,0 +1,21 @@
+<h2>Liste des Quiz disponibles</h2>
+<ul>
+  <li *ngFor="let quiz of quizzes">
+    <strong>{{ quiz.title }}</strong> – {{ quiz.description }}<br />
+    <small>Créé par : {{ quiz.creator_id?.username || 'inconnu' }}</small>
+    <br />
+    <a [routerLink]="['/play-quiz', quiz._id]">
+      <button>Jouer</button>
+    </a>
+    <button *ngIf="quiz.visibility !== 'public' && canDelete(quiz)"
+        (click)="inviteUser(quiz._id)">
+        ✉️ Inviter
+    </button>
+    <a *ngIf="canDelete(quiz)" [routerLink]="['/edit-quiz', quiz._id]">
+    <button>✏️ Modifier</button>
+    <button (click)="deleteQuiz(quiz._id)">🗑 Supprimer</button>
+    </a>
+
+    <hr />
+  </li>
+</ul>

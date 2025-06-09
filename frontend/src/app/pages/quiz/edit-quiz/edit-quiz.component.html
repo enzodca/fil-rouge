@@ -1,0 +1,60 @@
+<h2>Modifier un quiz</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div>
+    <label>Titre :</label>
+    <input formControlName="title" required placeholder="Titre du quiz" />
+  </div>
+
+  <div>
+    <label>Description :</label>
+    <textarea formControlName="description" placeholder="Description du quiz"></textarea>
+  </div>
+
+  <label>Visibilité :</label>
+  <select formControlName="visibility" title="Visibilité">
+    <option value="public">Public</option>
+    <option value="private">Privé (invitation par email)</option>
+    <option value="organization">Organisation</option>
+  </select>
+
+  <div *ngIf="form.get('visibility')?.value === 'private'" formArrayName="allowed_emails">
+    <h4>Emails autorisés</h4>
+    <div *ngFor="let email of allowedEmails.controls; let i = index">
+      <input [formControlName]="i" placeholder="email@exemple.com" />
+    </div>
+    <button type="button" (click)="addEmail()">+ Ajouter email</button>
+  </div>
+
+  <div formArrayName="questions">
+    <h3>Questions</h3>
+    <div *ngFor="let q of questions.controls; let i = index" [formGroupName]="i">
+      <hr />
+      <label>Contenu :</label>
+      <input formControlName="content" required placeholder="Contenu de la question" />
+
+      <label>Type :</label>
+      <select formControlName="type" title="Type de question">
+        <option value="QCM">QCM</option>
+        <option value="ordre">Ordre</option>
+        <option value="intrus">Intrus</option>
+      </select>
+
+      <div formArrayName="answers">
+        <h4>Réponses</h4>
+        <div *ngFor="let a of getAnswers(i).controls; let j = index" [formGroupName]="j">
+          <input type="text" formControlName="content" placeholder="Réponse" />
+          <label>
+            <input type="checkbox" formControlName="is_correct" />
+            correcte
+          </label>
+        </div>
+        <button type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" (click)="addQuestion()">+ Ajouter question</button>
+  <br /><br />
+  <button type="submit">Mettre à jour le quiz</button>
+</form>

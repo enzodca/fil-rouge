@@ -1,0 +1,21 @@
+<h2>Jouer au quiz</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="questions.length">
+  <div *ngFor="let q of questions">
+    <p><strong>{{ q.content }}</strong></p>
+    <div *ngFor="let a of q.answers">
+      <label>
+        <input type="radio" [formControlName]="q._id" [value]="a.content" />
+        {{ a.content }}
+      </label>
+    </div>
+    <hr />
+  </div>
+
+  <button type="submit">Valider mes réponses</button>
+</form>
+
+<div *ngIf="score !== null">
+  <h3>Score : {{ score }} / {{ questions.length }}</h3>
+  <a routerLink="/quiz-list"><button>Retour aux quiz</button></a>
+</div>
