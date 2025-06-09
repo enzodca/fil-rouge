@@ -15,6 +15,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class CreateQuizComponent {
   form: FormGroup;
+  errorMessage: string = '';
 
   constructor(private fb: FormBuilder, private http: HttpClient, private router: Router, private auth: AuthService) {
     this.form = this.fb.group({
@@ -22,7 +23,8 @@ export class CreateQuizComponent {
       description: '',
       visibility: 'public',
       allowed_emails: this.fb.array([]),
-      questions: this.fb.array([])
+      questions: this.fb.array([]),
+      creator_id: ''
     });
 
     this.addQuestion();
@@ -68,8 +70,11 @@ export class CreateQuizComponent {
   }
 
   submit() {
-    if (!this.form.value.creator_id) {
-      alert('creator_id requis (provisoire, bientôt automatisé)');
+    this.errorMessage = '';
+
+    const error = this.validateQuiz();
+    if (error) {
+      this.errorMessage = error;
       return;
     }
 
@@ -78,12 +83,44 @@ export class CreateQuizComponent {
         alert('Quiz créé !');
         this.router.navigate(['/accueil']);
       },
-      error: err => alert('Erreur : ' + err.error.message)
+      error: err => this.errorMessage = 'Erreur : ' + (err.error?.message || 'Erreur inconnue')
     });
   }
 
   addEmail() {
     const emails = this.form.get('allowed_emails') as FormArray;
     emails.push(this.fb.control(''));
+  }
+
+  validateQuiz(): string | null {
+    if (!this.form.value.title || !this.form.value.title.trim()) {
+      return 'Le titre est requis.';
+    }
+    if (!this.form.value.visibility) {
+      return 'La visibilité est requise.';
+    }
+    const questions = this.form.value.questions;
+    if (!questions || questions.length === 0) {
+      return 'Au moins une question est requise.';
+    }
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      if (!q.content || !q.content.trim()) {
+        return 'Chaque question doit avoir un contenu.';
+      }
+      if (!q.answers || q.answers.length < 2) {
+        return 'Chaque question doit avoir au moins deux réponses.';
+      }
+      const hasCorrect = q.answers.some((a: any) => a.is_correct);
+      if (!hasCorrect) {
+        return 'Chaque question doit avoir au moins une réponse correcte.';
+      }
+      for (let j = 0; j < q.answers.length; j++) {
+        if (!q.answers[j].content || !q.answers[j].content.trim()) {
+          return 'Chaque réponse doit avoir un contenu.';
+        }
+      }
+    }
+    return null;
   }
 }

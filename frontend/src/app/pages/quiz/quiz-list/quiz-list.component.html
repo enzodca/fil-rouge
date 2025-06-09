@@ -11,8 +11,8 @@
         (click)="inviteUser(quiz._id)">
         ✉️ Inviter
     </button>
-    <a *ngIf="canDelete(quiz)" [routerLink]="['/edit-quiz', quiz._id]">
-    <button>✏️ Modifier</button>
+    <a *ngIf="canDelete(quiz)" >
+    <button [routerLink]="['/edit-quiz', quiz._id]" >✏️ Modifier</button>
     <button (click)="deleteQuiz(quiz._id)">🗑 Supprimer</button>
     </a>
 

@@ -1,4 +1,7 @@
 <h2>Créer un nouveau quiz</h2>
+<div *ngIf="errorMessage" style="color: red; margin-bottom: 1em;">
+  {{ errorMessage }}
+</div>
 <form [formGroup]="form" (ngSubmit)="submit()">
 
   <div>

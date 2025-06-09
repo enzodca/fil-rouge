@@ -10,7 +10,7 @@ const quizSchema = new mongoose.Schema({
     enum: ['public', 'private', 'organization'],
     default: 'public'
   },
-  allowed_emails: [{ type: String }], // utile pour private
+  allowed_emails: [{ type: String }],
   created_at: { type: Date, default: Date.now }
 });
 

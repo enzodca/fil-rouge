@@ -16,7 +16,6 @@ router.get('/:id', auth, async (req, res) => {
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: 'Quiz non trouvé' });
 
-    // Règles d’accès :
     const user = req.user;
     const isAdmin = user.role === 'admin';
     const isOwner = quiz.creator_id.toString() === user.id;
