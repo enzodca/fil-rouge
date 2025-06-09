@@ -1,0 +1,11 @@
+<nav style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f0f0f0;">
+  <div>
+    <button (click)="goHome()">🏠 Accueil</button>
+  </div>
+
+  <div *ngIf="auth.isLoggedIn()">
+    Connecté en tant que : <strong>{{ auth.getUsername() }}</strong>
+
+    <button style="margin-left: 1rem;" (click)="logout()">🚪 Déconnexion</button>
+  </div>
+</nav>

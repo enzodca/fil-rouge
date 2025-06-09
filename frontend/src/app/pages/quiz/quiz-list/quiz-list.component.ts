@@ -22,7 +22,7 @@ export class QuizListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.http.get<any[]>(`http://localhost:3000/api/quiz/all`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/quiz/all`).subscribe({
       next: data => (this.quizzes = data)
     });
   }

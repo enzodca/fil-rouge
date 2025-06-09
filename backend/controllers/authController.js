@@ -25,6 +25,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
     {
       id: user._id,
+      username: user.username,
       role: user.role,
       organization_id: user.organization_id,
       email: user.email
@@ -40,7 +41,7 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findById(req.user.id).select('-password');
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: 'Erreur serveur' });
