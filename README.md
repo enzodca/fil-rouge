@@ -17,7 +17,9 @@ QUIZZ GAME MNS est une plateforme SaaS de création et de gestion de quiz intera
 
 Elle repose sur une forte orientation **gamification** (classements, badges, scores) et s'adapte à tout type d'organisation.
 
-Le projet est pensé pour être  **scalable** , **sécurisé** (RGPD) et  **éco-conçu** , avec un déploiement en containers Docker et une architecture MVC Node.js + Angular + MongoDB.
+- **Scalable**, **sécurisé** (RGPD), **éco-conçu**
+- Déploiement en containers Docker
+- Architecture MVC Node.js + Angular + MongoDB
 
 ---
 
@@ -44,33 +46,30 @@ Le projet est pensé pour être  **scalable** , **sécurisé** (RGPD) et  **éco
 | :-------- | :------------------- | :--------------- | :--------------- | :------------------ |
 | Angular   | Node.js (Express.js) | MongoDB          | JWT              | Docker / Kubernetes |
 
-Technologies complémentaires :
-
-* **Nginx** pour le reverse proxy
-* **Elastic Stack (ELK)** pour la gestion des logs
-* **CI/CD** avec **GitHub Actions** ou **GitLab CI**
-
----
-
-## 🧹 Base de données
-
-La base de données est modélisée autour des entités principales :
-
-* **users** : gestion des utilisateurs
-* **quizzes** : gestion des quiz
-* **questions** : gestion des questions liées aux quiz
-* **answers** : réponses possibles par question
-* **scores** : historique des résultats
-* **rankings** : classement général
+**Technologies complémentaires :**
+- **Nginx** pour le reverse proxy
+- **Elastic Stack (ELK)** pour la gestion des logs
+- **CI/CD** avec **GitHub Actions** ou **GitLab CI**
 
 ---
 
-## 🎯 Objectifs SMART du projet
+## 🧹 Modélisation de la base de données
 
-* Atteindre 100 utilisateurs actifs sous 3 mois après lancement
-* 50 quiz créés dans les 2 premiers mois
-* Temps de réponse moyen par question < 30 secondes
-* Taux d’adoption cible de 70 % au sein d'une entreprise cliente
+- **users** : gestion des utilisateurs
+- **quizzes** : gestion des quiz
+- **questions** : gestion des questions liées aux quiz
+- **answers** : réponses possibles par question
+- **scores** : historique des résultats
+- **rankings** : classement général
+
+---
+
+## 🎯 Objectifs SMART
+
+- Atteindre 100 utilisateurs actifs sous 3 mois après lancement
+- 50 quiz créés dans les 2 premiers mois
+- Temps de réponse moyen par question < 30 secondes
+- Taux d’adoption cible de 70 % au sein d'une entreprise cliente
 
 ---
 
@@ -120,15 +119,23 @@ La base de données est modélisée autour des entités principales :
 
 ---
 
-## 📣 Auteurs
+## 👤 Auteur
 
-* **Enzo Da Cunha Alves**
-
-  *Développeur fullstack, Chef de projet, UX/UI Designer, DevOps*
+**Enzo Da Cunha Alves**  
+*Développeur fullstack, Chef de projet, UX/UI Designer, DevOps*
 
 ---
 
+
 ## 🔥 Démarrage rapide (local)
+
+Avant de démarrer, veillez à créer les fichiers `.env` suivants :
+
+- **À la racine du projet** :  
+  Créez un fichier `.env` contenant les variables d'environnement pour MongoDB (exemple fourni dans le dépôt).
+
+- **Dans le dossier `backend`** :  
+  Créez un fichier `.env` pour les variables d'environnement spécifiques à l'API (JWT_SECRET, configuration de la base, etc.).
 
 ```bash
 # Cloner le projet
@@ -141,6 +148,9 @@ npm install
 # Frontend Setup
 cd ../frontend
 npm install
+
+# Revenir à la racine du projet
+cd ..
 
 # Lancer les containers Docker
 docker-compose up --build
