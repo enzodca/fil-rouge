@@ -57,10 +57,15 @@ exports.deleteQuiz = async (req, res) => {
       return res.status(403).json({ message: 'Non autorisé à supprimer ce quiz' });
     }
 
-    await Question.deleteMany({ quiz_id: quizId });
     const questions = await Question.find({ quiz_id: quizId });
     const questionIds = questions.map(q => q._id);
-    await Answer.deleteMany({ question_id: { $in: questionIds } });
+
+    if (questionIds.length > 0) {
+      await Answer.deleteMany({ question_id: { $in: questionIds } });
+    }
+
+    await Question.deleteMany({ quiz_id: quizId });
+
     await Quiz.findByIdAndDelete(quizId);
 
     res.json({ message: 'Quiz supprimé' });
