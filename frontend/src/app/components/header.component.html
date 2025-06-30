@@ -1,11 +1,15 @@
 <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f0f0f0;">
   <div>
-    <button (click)="goHome()">🏠 Accueil</button>
+    <button mat-raised-button (click)="goHome()">
+      <mat-icon>home</mat-icon> Accueil
+    </button>
   </div>
 
   <div *ngIf="auth.isLoggedIn()">
     Connecté en tant que : <strong>{{ auth.getUsername() }}</strong>
 
-    <button style="margin-left: 1rem;" (click)="logout()">🚪 Déconnexion</button>
+    <button mat-raised-button style="margin-left: 1rem;" (click)="logout()">
+      <mat-icon>logout</mat-icon> Déconnexion
+    </button>
   </div>
 </nav>

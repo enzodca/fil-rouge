@@ -1,1 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.full-width {
+    width: 100%;
+}
+
+mat-card {
+    max-width: 400px;
+    margin: 2em auto;
+}
+
+.center-title {
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+.question-card {
+  margin-bottom: 1.5em;
+}
+
+.full-width-radio {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5em;
+}

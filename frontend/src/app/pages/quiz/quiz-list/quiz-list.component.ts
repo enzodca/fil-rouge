@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
   selector: 'app-quiz-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [SharedModule],
   templateUrl: './quiz-list.component.html'
 })
 export class QuizListComponent implements OnInit {

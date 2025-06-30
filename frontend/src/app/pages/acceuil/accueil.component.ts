@@ -1,14 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { RouterLink } from '@angular/router';
+import { SharedModule } from '../../shared/shared.module';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
+
 @Component({
   selector: 'app-accueil',
-  imports: [ RouterLink,CommonModule],
+  imports: [ SharedModule],
   templateUrl: './accueil.component.html',
   styleUrl: './accueil.component.scss'
 })
@@ -23,10 +23,5 @@ export class AccueilComponent implements OnInit {
       next: user => this.user = user,
       error: () => this.router.navigate(['/login'])
     });
-  }
-
-  logout() {
-    this.auth.logout();
-    this.router.navigate(['/']);
   }
 }

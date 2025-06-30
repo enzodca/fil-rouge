@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
-import { RouterLink } from '@angular/router';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [SharedModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })

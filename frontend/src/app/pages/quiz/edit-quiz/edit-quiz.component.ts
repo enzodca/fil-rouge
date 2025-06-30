@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
   selector: 'app-edit-quiz',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [SharedModule],
   templateUrl: './edit-quiz.component.html'
 })
 export class EditQuizComponent implements OnInit {

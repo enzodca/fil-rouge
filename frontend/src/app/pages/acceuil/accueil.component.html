@@ -1,8 +1,7 @@
 <div style="text-align:center; margin-top: 100px;">
     <h1>Bienvenue {{ user?.username || '' }} !</h1>
     <p>Tu es maintenant connecté à QUIZZ GAME MNS</p>
-    <button (click)="logout()">Se déconnecter</button>
-    <a routerLink="/create-quiz"><button>creer un quiz</button></a>
-    <a routerLink="/quiz-list"><button>voir les quiz</button></a>
+    <a routerLink="/create-quiz"><button mat-raised-button>creer un quiz</button></a>
+    <a routerLink="/quiz-list"><button mat-raised-button>voir les quiz</button></a>
   </div>
 `

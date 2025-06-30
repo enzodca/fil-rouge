@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
   selector: 'app-play-quiz',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [SharedModule],
   templateUrl: './play-quiz.component.html'
 })
 export class PlayQuizComponent implements OnInit {

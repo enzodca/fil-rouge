@@ -1,16 +1,16 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { SharedModule } from '../../../shared/shared.module';
 
 
 @Component({
   selector: 'app-create-quiz',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [SharedModule],
   templateUrl: './create-quiz.component.html'
 })
 export class CreateQuizComponent {
