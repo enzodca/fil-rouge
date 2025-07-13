@@ -1,24 +1,34 @@
 import { Component } from '@angular/core';
-import { SharedModule } from '../shared/shared.module';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../services/auth/auth.service';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [SharedModule],
   templateUrl: './header.component.html'
 })
 export class HeaderComponent {
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(
+    public auth: AuthService,
+    private router: Router
+  ) {}
 
-goHome() {
-  if (this.auth.isLoggedIn()) {
-    this.router.navigate(['/accueil']);
-  } else {
-    this.router.navigate(['/']);
+  get organizationId(): string | null {
+    return this.auth.getOrganizationId();
   }
-}
+
+  get organizationName(): string | null {
+    return this.auth.getOrganizationName();
+  }
+
+  get hasOrganization(): boolean {
+    return this.auth.hasOrganization();
+  }
+
+  goHome() {
+    this.router.navigate([this.auth.isLoggedIn() ? '/accueil' : '/']);
+  }
 
   logout() {
     this.auth.logout();

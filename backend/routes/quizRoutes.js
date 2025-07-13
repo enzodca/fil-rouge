@@ -8,9 +8,9 @@ const Answer = require('../models/Answer');
 
 router.post('/create', auth, createQuiz);
 router.get('/all', auth, getAllQuizzes);
-
 router.delete('/:id', auth, deleteQuiz);
 router.put('/:id', auth, updateQuiz);
+
 router.get('/:id', auth, async (req, res) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
@@ -33,7 +33,6 @@ router.get('/:id', auth, async (req, res) => {
 
     const questions = await Question.find({ quiz_id: quiz._id });
     const full = [];
-
     for (const q of questions) {
       const answers = await Answer.find({ question_id: q._id });
       full.push({ ...q.toObject(), answers });
@@ -44,6 +43,7 @@ router.get('/:id', auth, async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 });
+
 router.put('/:id/invite', auth, async (req, res) => {
   const { email } = req.body;
   const quiz = await Quiz.findById(req.params.id);
@@ -54,7 +54,6 @@ router.put('/:id/invite', auth, async (req, res) => {
   const isAdmin = req.user.role === 'admin';
 
   if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Accès refusé' });
-
   if (quiz.visibility !== 'private') return res.status(400).json({ message: 'Quiz non privé' });
 
   if (!quiz.allowed_emails.includes(email)) {
@@ -64,8 +63,5 @@ router.put('/:id/invite', auth, async (req, res) => {
 
   res.json({ message: 'Email ajouté' });
 });
-
-
-
 
 module.exports = router;

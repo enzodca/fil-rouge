@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
 import { SharedModule } from '../../shared/shared.module';
 
 @Component({
@@ -19,19 +19,23 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      username: '',
-      email: '',
-      password: ''
+      username: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required]
     });
   }
 
   onSubmit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.auth.register(this.form.value).subscribe({
       next: () => {
         alert('Inscription réussie !');
         this.router.navigate(['/login']);
       },
-      error: err => alert('Erreur : ' + err.error.message)
+      error: err => alert('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
     });
   }
 }

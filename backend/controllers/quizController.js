@@ -3,11 +3,19 @@ const Question = require('../models/Question');
 const Answer = require('../models/Answer');
 
 exports.createQuiz = async (req, res) => {
-  const { title, description, questions } = req.body;
+  const { title, description, questions, visibility, allowed_emails } = req.body;
   const creator_id = req.user.id;
+  const organization_id = (visibility === 'organization') ? req.user.organization_id : undefined;
 
   try {
-    const quiz = await Quiz.create({ title, description, creator_id });
+    const quiz = await Quiz.create({
+      title,
+      description,
+      creator_id,
+      visibility,
+      organization_id,
+      allowed_emails: Array.isArray(allowed_emails) ? allowed_emails : []
+    });
 
     for (const q of questions) {
       const question = await Question.create({
@@ -30,7 +38,6 @@ exports.createQuiz = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la création', error: err.message });
   }
 };
-
 
 exports.getAllQuizzes = async (req, res) => {
   try {
@@ -65,7 +72,6 @@ exports.deleteQuiz = async (req, res) => {
     }
 
     await Question.deleteMany({ quiz_id: quizId });
-
     await Quiz.findByIdAndDelete(quizId);
 
     res.json({ message: 'Quiz supprimé' });
@@ -73,7 +79,6 @@ exports.deleteQuiz = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 };
-
 
 exports.updateQuiz = async (req, res) => {
   const quizId = req.params.id;
@@ -97,7 +102,6 @@ exports.updateQuiz = async (req, res) => {
 
     const oldQuestions = await Question.find({ quiz_id: quizId });
     const oldQuestionIds = oldQuestions.map(q => q._id.toString());
-
     const incomingQuestionIds = questions.filter(q => q._id).map(q => q._id);
 
     const toDelete = oldQuestionIds.filter(id => !incomingQuestionIds.includes(id));
@@ -132,10 +136,8 @@ exports.updateQuiz = async (req, res) => {
       }
     }
 
-    res.json({ message: 'Quiz mis à jour partiellement avec succès' });
+    res.json({ message: 'Quiz mis à jour avec succès' });
   } catch (err) {
     res.status(500).json({ message: 'Erreur update', error: err.message });
   }
 };
-
-

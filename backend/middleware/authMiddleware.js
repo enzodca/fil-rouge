@@ -11,10 +11,11 @@ module.exports = (req, res, next) => {
       id: decoded.id,
       role: decoded.role,
       organization_id: decoded.organization_id,
+      username: decoded.username,
       email: decoded.email
     };
     next();
-  } catch (err) {
+  } catch {
     res.status(401).json({ message: 'Token invalide' });
   }
 };

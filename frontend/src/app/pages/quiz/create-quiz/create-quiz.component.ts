@@ -1,32 +1,36 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { QuizService } from '../../../services/quiz/quiz.service';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 
-
 @Component({
   selector: 'app-create-quiz',
-  standalone: true,
   imports: [SharedModule],
-  templateUrl: './create-quiz.component.html'
+  templateUrl: './create-quiz.component.html',
 })
-export class CreateQuizComponent {
+export class CreateQuizComponent implements OnInit {
   form: FormGroup;
-  errorMessage: string = '';
+  errorMessage = '';
+  hasOrganization = false;
+  organizationName: string | null = null;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private router: Router, private auth: AuthService) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private auth: AuthService,
+    private quizService: QuizService
+  ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
       description: '',
       visibility: 'public',
       allowed_emails: this.fb.array([]),
       questions: this.fb.array([]),
-      creator_id: ''
+      creator_id: '',
     });
-
     this.addQuestion();
   }
 
@@ -34,17 +38,40 @@ export class CreateQuizComponent {
     const id = this.auth.getUserId();
     if (id) {
       this.form.get('creator_id')?.setValue(id);
+      this.auth.getToken() && this.auth.isLoggedIn()
+        ? this.authUserInfo()
+        : this.handleNotConnected();
     } else {
-      alert('Non connecté !');
-      this.router.navigate(['/login']);
+      this.handleNotConnected();
     }
   }
 
-  get questions() {
+  private authUserInfo() {
+    this.authMe().subscribe({
+      next: (user) => {
+        this.hasOrganization = !!user.organization_id;
+        this.organizationName = user.organization_id?.name || null;
+      },
+      error: () => {
+        this.hasOrganization = false;
+      },
+    });
+  }
+
+  private authMe() {
+    return this.auth['http'].get<any>(`${environment.apiUrl}/auth/me`);
+  }
+
+  private handleNotConnected() {
+    alert('Non connecté !');
+    this.router.navigate(['/login']);
+  }
+
+  get questions(): FormArray {
     return this.form.get('questions') as FormArray;
   }
-  
-  get allowedEmails() {
+
+  get allowedEmails(): FormArray {
     return this.form.get('allowed_emails') as FormArray;
   }
 
@@ -57,16 +84,27 @@ export class CreateQuizComponent {
       content: ['', Validators.required],
       type: 'QCM',
       answers: this.fb.array([
-        this.fb.group({ content: ['', Validators.required], is_correct: false }),
-        this.fb.group({ content: ['', Validators.required], is_correct: false })
-      ])
+        this.fb.group({
+          content: ['', Validators.required],
+          is_correct: false,
+        }),
+        this.fb.group({
+          content: ['', Validators.required],
+          is_correct: false,
+        }),
+      ]),
     });
     this.questions.push(question);
   }
 
   addAnswer(qIndex: number) {
-    const answers = this.questions.at(qIndex).get('answers') as FormArray;
-    answers.push(this.fb.group({ content: ['', Validators.required], is_correct: false }));
+    this.getAnswers(qIndex).push(
+      this.fb.group({ content: ['', Validators.required], is_correct: false })
+    );
+  }
+
+  addEmail() {
+    this.allowedEmails.push(this.fb.control(''));
   }
 
   submit() {
@@ -75,55 +113,37 @@ export class CreateQuizComponent {
 
     if (this.form.invalid || error) {
       this.form.markAllAsTouched();
-      if (error) {
-        this.errorMessage = error;
-      }
+      if (error) this.errorMessage = error;
       return;
     }
 
-    this.http.post(`${environment.apiUrl}/quiz/create`, this.form.value).subscribe({
+    this.quizService.createQuiz(this.form.value).subscribe({
       next: () => {
         alert('Quiz créé !');
         this.router.navigate(['/accueil']);
       },
-      error: err => this.errorMessage = 'Erreur : ' + (err.error?.message || 'Erreur inconnue')
+      error: (err) =>
+        (this.errorMessage =
+          'Erreur : ' + (err.error?.message || 'Erreur inconnue')),
     });
   }
 
-  addEmail() {
-    const emails = this.form.get('allowed_emails') as FormArray;
-    emails.push(this.fb.control(''));
-  }
-
   validateQuiz(): string | null {
-    if (!this.form.value.title || !this.form.value.title.trim()) {
-      return 'Le titre est requis.';
-    }
+    const { title, visibility, questions } = this.form.value;
 
-    if (!this.form.value.visibility) {
-      return 'La visibilité est requise.';
-    }
-    
-    const questions = this.form.value.questions;
-    if (!questions || questions.length === 0) {
+    if (!title || !title.trim()) return 'Le titre est requis.';
+    if (!visibility) return 'La visibilité est requise.';
+    if (!questions || questions.length === 0)
       return 'Au moins une question est requise.';
-    }
 
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
-
-      if (!q.content || !q.content.trim()) {
+      if (!q.content || !q.content.trim())
         return 'Chaque question doit avoir un contenu.';
-      }
-
-      if (!q.answers || q.answers.length < 2) {
+      if (!q.answers || q.answers.length < 2)
         return 'Chaque question doit avoir au moins deux réponses.';
-      }
-
-      const hasCorrect = q.answers.some((a: any) => a.is_correct);
-      if (!hasCorrect) {
+      if (!q.answers.some((a: any) => a.is_correct))
         return 'Chaque question doit avoir au moins une réponse correcte.';
-      }
 
       for (let j = 0; j < q.answers.length; j++) {
         if (!q.answers[j].content || !q.answers[j].content.trim()) {
@@ -132,9 +152,12 @@ export class CreateQuizComponent {
       }
 
       const answerContents = q.answers.map((a: any) => a.content.trim());
-      const hasDuplicate = answerContents.some((val: string, idx: number) => answerContents.indexOf(val) !== idx);
-      if (hasDuplicate) {
-        return 'Chaque réponse d\'une question doit être unique.';
+      if (
+        answerContents.some(
+          (val: string, idx: number) => answerContents.indexOf(val) !== idx
+        )
+      ) {
+        return "Chaque réponse d'une question doit être unique.";
       }
     }
     return null;

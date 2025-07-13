@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../services/auth/auth.service';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
   selector: 'app-quiz-list',
-  standalone: true,
   imports: [SharedModule],
   templateUrl: './quiz-list.component.html'
 })
@@ -37,18 +36,16 @@ export class QuizListComponent implements OnInit {
         this.quizzes = this.quizzes.filter(q => q._id !== id);
         alert('Quiz supprimé');
       },
-      error: err => alert('Erreur suppression : ' + err.error.message)
+      error: err => alert('Erreur suppression : ' + (err.error?.message || 'Erreur inconnue'))
     });
   }
 
   inviteUser(quizId: string) {
     const email = prompt('Email à inviter ?');
     if (!email) return;
-
     this.http.put(`${environment.apiUrl}/quiz/${quizId}/invite`, { email }).subscribe({
       next: () => alert('Utilisateur invité'),
-      error: err => alert('Erreur : ' + err.error.message)
+      error: err => alert('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
     });
   }
-
 }

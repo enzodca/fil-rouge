@@ -29,18 +29,16 @@
             <input matInput [formControlName]="i" placeholder="email@exemple.com" />
           </mat-form-field>
         </div>
-        <button mat-stroked-button color="primary" type="button" (click)="addEmail()">
-          <mat-icon>add</mat-icon> Ajouter email
-        </button>
+        <button mat-stroked-button color="primary" type="button" (click)="addEmail()">+ Ajouter email</button>
       </div>
 
       <div formArrayName="questions">
         <h3>Questions</h3>
-        <div *ngFor="let q of questions.controls; let i = index" [formGroupName]="i" style="margin-bottom: 2em;">
-          <mat-card class="question-card">
+        <div *ngFor="let q of questions.controls; let i=index" [formGroupName]="i" style="margin-bottom: 2em;">
+          <mat-card>
             <mat-card-content>
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Contenu</mat-label>
+                <mat-label>Question</mat-label>
                 <input matInput formControlName="content" required placeholder="Contenu de la question" />
               </mat-form-field>
 
@@ -55,29 +53,26 @@
 
               <div formArrayName="answers">
                 <h4>Réponses</h4>
-                <div *ngFor="let a of getAnswers(i).controls; let j = index" [formGroupName]="j" style="display: flex; align-items: center; gap: 1em;">
+                <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" style="display: flex; align-items: center; gap: 1em;">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Réponse</mat-label>
                     <input matInput type="text" formControlName="content" placeholder="Réponse" />
                   </mat-form-field>
                   <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
                 </div>
-                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">
-                  <mat-icon>add</mat-icon> Ajouter réponse
-                </button>
+                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
               </div>
             </mat-card-content>
           </mat-card>
         </div>
       </div>
 
-      <button mat-stroked-button color="accent" type="button" (click)="addQuestion()">
-        <mat-icon>add</mat-icon> Ajouter question
-      </button>
+      <button mat-stroked-button color="accent" type="button" (click)="addQuestion()">+ Ajouter question</button>
       <br /><br />
-      <button mat-raised-button color="primary" type="submit">
-        <mat-icon>save</mat-icon> Mettre à jour le quiz
-      </button>
+      <button mat-raised-button color="primary" type="submit">Mettre à jour le quiz</button>
+      <div *ngIf="errorMessage" style="color: red; margin-bottom: 1em;">
+        {{ errorMessage }}
+      </div>
     </form>
   </mat-card-content>
 </mat-card>

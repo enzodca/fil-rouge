@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';;
 import { SharedModule } from '../../shared/shared.module';
 
 @Component({
@@ -26,11 +26,8 @@ export class LoginComponent {
 
   onSubmit() {
     this.auth.login(this.form.value).subscribe({
-      next: () => {
-        this.router.navigate(['/accueil']);
-      },
+      next: () => this.router.navigate(['/accueil']),
       error: err => alert('Erreur : ' + err.error.message)
     });
   }
 }
-

@@ -1,9 +1,6 @@
 <mat-card>
   <mat-card-title class="center-title">Créer un nouveau quiz</mat-card-title>
   <mat-card-content>
-    <div *ngIf="errorMessage" style="color: red; margin-bottom: 1em;">
-      {{ errorMessage }}
-    </div>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Titre</mat-label>
@@ -20,7 +17,10 @@
         <mat-select formControlName="visibility">
           <mat-option value="public">Public</mat-option>
           <mat-option value="private">Privé (invitation par email)</mat-option>
-          <mat-option value="organization">Organisation</mat-option>
+          <mat-option *ngIf="hasOrganization" value="organization">
+            Organisation
+            <span *ngIf="organizationName">&nbsp;({{ organizationName }})</span>
+          </mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -73,6 +73,9 @@
       <button mat-stroked-button color="accent" type="button" (click)="addQuestion()">+ Ajouter question</button>
       <br /><br />
       <button mat-raised-button color="primary" type="submit">Créer le quiz</button>
+      <div *ngIf="errorMessage" style="color: red; margin-bottom: 1em;">
+        {{ errorMessage }}
+      </div>
     </form>
   </mat-card-content>
 </mat-card>
