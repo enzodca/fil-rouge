@@ -1,0 +1,81 @@
+<mat-card>
+  <mat-card-title class="center-title">Créer un nouveau quiz</mat-card-title>
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Titre</mat-label>
+        <input matInput formControlName="title" required placeholder="Titre du quiz" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" placeholder="Description"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Visibilité</mat-label>
+        <mat-select formControlName="visibility">
+          <mat-option value="public">Public</mat-option>
+          <mat-option value="private">Privé (invitation par email)</mat-option>
+          <mat-option *ngIf="hasOrganization" value="organization">
+            Organisation
+            <span *ngIf="organizationName">&nbsp;({{ organizationName }})</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div *ngIf="form.get('visibility')?.value === 'private'" formArrayName="allowed_emails">
+        <h4>Emails autorisés</h4>
+        <div *ngFor="let email of allowedEmails.controls; let i = index">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email autorisé</mat-label>
+            <input matInput [formControlName]="i" placeholder="email@exemple.com" />
+          </mat-form-field>
+        </div>
+        <button mat-stroked-button color="primary" type="button" (click)="addEmail()">+ Ajouter email</button>
+      </div>
+
+      <div formArrayName="questions">
+        <h3>Questions</h3>
+        <div *ngFor="let q of questions.controls; let i=index" [formGroupName]="i" style="margin-bottom: 2em;">
+          <mat-card>
+            <mat-card-content>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Question</mat-label>
+                <input matInput formControlName="content" required placeholder="Contenu de la question" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Type</mat-label>
+                <mat-select formControlName="type">
+                  <mat-option value="QCM">QCM</mat-option>
+                  <mat-option value="ordre">Ordre</mat-option>
+                  <mat-option value="intrus">Intrus</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div formArrayName="answers">
+                <h4>Réponses</h4>
+                <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" style="display: flex; align-items: center; gap: 1em;">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Réponse</mat-label>
+                    <input matInput type="text" formControlName="content" placeholder="Réponse" />
+                  </mat-form-field>
+                  <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
+                </div>
+                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <button mat-stroked-button color="accent" type="button" (click)="addQuestion()">+ Ajouter question</button>
+      <br /><br />
+      <button mat-raised-button color="primary" type="submit">Créer le quiz</button>
+      <div *ngIf="errorMessage" style="color: red; margin-bottom: 1em;">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

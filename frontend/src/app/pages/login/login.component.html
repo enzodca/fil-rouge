@@ -1,0 +1,25 @@
+<mat-card class="login-card">
+  <mat-card-title class="center-title">Connexion</mat-card-title>
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mot de passe</mat-label>
+        <input matInput type="password" formControlName="password" required />
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>login</mat-icon> Connexion
+      </button>
+    </form>
+    <div style="margin-top: 1em;">
+      <a routerLink="/register">
+        <button mat-stroked-button color="accent">
+          <mat-icon>person_add</mat-icon> Se créer un compte
+        </button>
+      </a>
+    </div>
+  </mat-card-content>
+</mat-card>

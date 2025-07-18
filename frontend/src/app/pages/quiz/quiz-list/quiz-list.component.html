@@ -1,0 +1,32 @@
+<h2 style="text-align:center; margin-bottom: 2em;">Liste des Quiz disponibles</h2>
+<div style="max-width: 700px; margin: auto;">
+  <ng-container *ngFor="let quiz of quizzes">
+    <mat-card style="margin-bottom: 1.5em;">
+      <mat-card-title>
+        <mat-icon color="primary" style="vertical-align: middle;">quiz</mat-icon>
+        <span style="vertical-align: middle;">{{ quiz.title }}</span>
+      </mat-card-title>
+      <mat-card-content>
+        <div style="margin-bottom: 0.5em;">{{ quiz.description }}</div>
+        <small>Créé par : {{ quiz.creator_id?.username || 'inconnu' }}</small>
+      </mat-card-content>
+      <mat-card-actions>
+        <a [routerLink]="['/play-quiz', quiz._id]">
+          <button mat-raised-button color="primary">
+            <mat-icon>play_arrow</mat-icon> Jouer
+          </button>
+        </a>
+        <button mat-stroked-button color="accent" *ngIf="quiz.visibility !== 'public' && canDelete(quiz)"
+            (click)="inviteUser(quiz._id)">
+          <mat-icon>mail</mat-icon> Inviter
+        </button>
+        <button mat-stroked-button color="primary" *ngIf="canDelete(quiz)" [routerLink]="['/edit-quiz', quiz._id]">
+          <mat-icon>edit</mat-icon> Modifier
+        </button>
+        <button mat-stroked-button color="warn" *ngIf="canDelete(quiz)" (click)="deleteQuiz(quiz._id)">
+          <mat-icon>delete</mat-icon> Supprimer
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-container>
+</div>

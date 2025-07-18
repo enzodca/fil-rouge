@@ -1,0 +1,10 @@
+<div style="text-align:center; margin-top: 100px;">
+  <h1>Bienvenue {{ user?.username || '' }} !</h1>
+  <p>Tu es maintenant connecté à QUIZZ GAME MNS</p>
+  <a routerLink="/create-quiz">
+    <button mat-raised-button>Créer un quiz</button>
+  </a>
+  <a routerLink="/quiz-list">
+    <button mat-raised-button>Voir les quiz</button>
+  </a>
+</div>

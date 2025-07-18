@@ -1,0 +1,82 @@
+<div *ngIf="isLoading">Chargement...</div>
+<div *ngIf="error && !isLoading" style="color: red;">{{ error }}</div>
+
+<mat-card *ngIf="organization && !isLoading">
+  <mat-card-title>{{ organization.name }}</mat-card-title>
+  <mat-card-content>
+    
+    <div *ngIf="canManage" style="margin-bottom: 2em;">
+      <h3>Modifier le nom</h3>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nom de l'organisation</mat-label>
+        <input matInput [(ngModel)]="newName" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="updateName()">
+        Mettre à jour
+      </button>
+    </div>
+
+    <div *ngIf="canInviteMembers()" style="margin-bottom: 2em;">
+      <h3>Inviter un membre</h3>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [(ngModel)]="inviteEmail" />
+      </mat-form-field>
+      <button mat-raised-button color="accent" (click)="inviteMember()">
+        Inviter
+      </button>
+    </div>
+
+    <div style="margin-bottom: 2em;">
+      <h3>Membres ({{ organization.members.length }})</h3>
+      <mat-list>
+        <mat-list-item *ngFor="let member of organization.members">
+          <span>{{ member.username }} ({{ member.email }})</span>
+          <span *ngIf="member.organization_role === 'chef'" style="color: gold; margin-left: 1em;">
+            👑 Chef
+          </span>
+          <button 
+            *ngIf="canRemoveMember(member._id!)" 
+            mat-icon-button 
+            color="warn" 
+            (click)="removeMember(member._id!)"
+            style="margin-left: auto;">
+            <mat-icon>remove_circle</mat-icon>
+          </button>
+        </mat-list-item>
+      </mat-list>
+    </div>
+
+    <div>
+      <button 
+        *ngIf="canManage" 
+        mat-raised-button 
+        color="warn" 
+        (click)="deleteOrg()"
+        style="margin-right: 1em;">
+        Supprimer l'organisation
+      </button>
+      
+      <button 
+        *ngIf="!isCurrentUserChef()" 
+        mat-stroked-button 
+        color="warn" 
+        (click)="leaveOrganization()">
+        Quitter l'organisation
+      </button>
+    </div>
+
+  </mat-card-content>
+</mat-card>
+
+<ng-template #noOrganization>
+  <mat-card>
+    <mat-card-title>Aucune organisation</mat-card-title>
+    <mat-card-content>
+      <p>Vous n'appartenez à aucune organisation.</p>
+      <a routerLink="/create-organization">
+        <button mat-raised-button color="primary">Créer une organisation</button>
+      </a>
+    </mat-card-content>
+  </mat-card>
+</ng-template>
