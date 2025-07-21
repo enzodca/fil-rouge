@@ -85,15 +85,27 @@ export class EditQuizComponent implements OnInit {
               this.fb.group({ content: ['', Validators.required], is_correct: false }),
               this.fb.group({ content: ['', Validators.required], is_correct: false })
             ])
-      )
+      ),
+      _id: q?._id || null
     });
     this.questions.push(question);
+  }
+
+  removeQuestion(index: number) {
+    this.questions.removeAt(index);
   }
 
   addAnswer(qIndex: number) {
     this.getAnswers(qIndex).push(
       this.fb.group({ content: ['', Validators.required], is_correct: false })
     );
+  }
+
+  removeAnswer(qIndex: number, aIndex: number) {
+    const answers = this.getAnswers(qIndex);
+    if (answers.length > 2) {
+      answers.removeAt(aIndex);
+    }
   }
 
   addEmail() {

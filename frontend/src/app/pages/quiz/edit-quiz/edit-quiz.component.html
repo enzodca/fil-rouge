@@ -36,6 +36,14 @@
         <h3>Questions</h3>
         <div *ngFor="let q of questions.controls; let i=index" [formGroupName]="i" style="margin-bottom: 2em;">
           <mat-card>
+            <mat-card-header>
+              <mat-card-title style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span>Question {{ i + 1 }}</span>
+                <button mat-icon-button color="warn" type="button" (click)="removeQuestion(i)" *ngIf="questions.length > 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card-title>
+            </mat-card-header>
             <mat-card-content>
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Question</mat-label>
@@ -59,6 +67,10 @@
                     <input matInput type="text" formControlName="content" placeholder="Réponse" />
                   </mat-form-field>
                   <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
+                  <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
+                          *ngIf="getAnswers(i).length > 2">
+                    <mat-icon>delete</mat-icon>
+                  </button>
                 </div>
                 <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
               </div>

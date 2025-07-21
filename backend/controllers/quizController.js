@@ -118,20 +118,21 @@ exports.updateQuiz = async (req, res) => {
           { content: q.content, type: q.type },
           { new: true }
         );
+
         await Answer.deleteMany({ question_id: q._id });
+
+        for (const a of q.answers) {
+          await Answer.create({
+            content: a.content,
+            is_correct: a.is_correct,
+            question_id: question._id
+          });
+        }
       } else {
         question = await Question.create({
           content: q.content,
           type: q.type,
           quiz_id: quizId
-        });
-      }
-
-      for (const a of q.answers) {
-        await Answer.create({
-          content: a.content,
-          is_correct: a.is_correct,
-          question_id: question._id
         });
       }
     }

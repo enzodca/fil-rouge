@@ -6,7 +6,16 @@
         <mat-card class="question-card">
           <mat-card-content>
             <p><strong>{{ q.content }}</strong></p>
-            <mat-radio-group [formControlName]="q._id">
+            
+            <div *ngIf="q.type === 'QCM'" [formArrayName]="q._id">
+              <div *ngFor="let a of q.answers; let j = index">
+                <mat-checkbox [formControlName]="j" class="full-width-checkbox">
+                  {{ a.content }}
+                </mat-checkbox>
+              </div>
+            </div>
+            
+            <mat-radio-group *ngIf="q.type !== 'QCM'" [formControlName]="q._id">
               <div *ngFor="let a of q.answers">
                 <mat-radio-button [value]="a.content" class="full-width-radio">
                   {{ a.content }}

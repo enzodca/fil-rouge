@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 
@@ -31,7 +31,14 @@ export class PlayQuizComponent implements OnInit {
       next: data => {
         this.questions = data.questions;
         for (let q of this.questions) {
-          this.form.addControl(q._id, this.fb.control(null));
+          if (q.type === 'QCM') {
+            const answersFormArray = this.fb.array(
+              q.answers.map(() => this.fb.control(false))
+            );
+            this.form.addControl(q._id, answersFormArray);
+          } else {
+            this.form.addControl(q._id, this.fb.control(null));
+          }
         }
       },
       error: () => {
@@ -41,12 +48,28 @@ export class PlayQuizComponent implements OnInit {
     });
   }
 
+  getAnswersFormArray(questionId: string): FormArray {
+    return this.form.get(questionId) as FormArray;
+  }
+
   onSubmit() {
     let total = 0;
     for (const question of this.questions) {
-      const selected = this.form.value[question._id];
-      const correct = question.answers.find((a: any) => a.is_correct)?.content;
-      if (selected === correct) total++;
+      if (question.type === 'QCM') {
+        const selectedAnswers = this.form.value[question._id];
+        const correctAnswers = question.answers.map((a: any) => a.is_correct);
+        
+        const isCorrect = selectedAnswers.length === correctAnswers.length &&
+          selectedAnswers.every((selected: boolean, index: number) => 
+            selected === correctAnswers[index]
+          );
+        
+        if (isCorrect) total++;
+      } else {
+        const selected = this.form.value[question._id];
+        const correct = question.answers.find((a: any) => a.is_correct)?.content;
+        if (selected === correct) total++;
+      }
     }
     this.score = total;
   }
