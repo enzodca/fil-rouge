@@ -12,6 +12,8 @@ export interface Quiz {
   visibility: 'public' | 'private' | 'organization';
   allowed_emails: string[];
   questions: Question[];
+  has_timer?: boolean;
+  total_time?: number;
   created_at?: Date;
 }
 
@@ -21,6 +23,7 @@ export interface Question {
   type: 'QCM' | 'ordre' | 'intrus';
   quiz_id?: string;
   answers: Answer[];
+  time_limit?: number;
 }
 
 export interface Answer {

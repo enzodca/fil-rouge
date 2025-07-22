@@ -96,3 +96,34 @@
     font-size: 1.1em;
   }
 }
+
+.timer-container {
+  margin-bottom: 2em;
+}
+
+.timer-card {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.timer-warning {
+  color: #f44336 !important;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}

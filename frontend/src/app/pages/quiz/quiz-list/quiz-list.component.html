@@ -1,13 +1,19 @@
-<h2 style="text-align:center; margin-bottom: 2em;">Liste des Quiz disponibles</h2>
-<div style="max-width: 700px; margin: auto;">
+<h2 class="quiz-list-title">Liste des Quiz disponibles</h2>
+<div class="quiz-list-container">
   <ng-container *ngFor="let quiz of quizzes">
-    <mat-card style="margin-bottom: 1.5em;">
+    <mat-card class="quiz-card">
       <mat-card-title>
-        <mat-icon color="primary" style="vertical-align: middle;">quiz</mat-icon>
-        <span style="vertical-align: middle;">{{ quiz.title }}</span>
+        <mat-icon class="quiz-title-icon">quiz</mat-icon>
+        <span class="quiz-title-text">{{ quiz.title }}</span>
       </mat-card-title>
       <mat-card-content>
-        <div style="margin-bottom: 0.5em;">{{ quiz.description }}</div>
+        <div class="quiz-description">{{ quiz.description }}</div>
+        <div class="timer-info" *ngIf="quiz.has_timer">
+          <mat-icon class="timer-icon">access_time</mat-icon>
+          <span class="timer-text">
+            Temps total : {{ formatTime(quiz.total_time || 0) }}
+          </span>
+        </div>
         <small>Créé par : {{ quiz.creator_id?.username || 'inconnu' }}</small>
       </mat-card-content>
       <mat-card-actions>

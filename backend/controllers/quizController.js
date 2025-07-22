@@ -3,25 +3,33 @@ const Question = require('../models/Question');
 const Answer = require('../models/Answer');
 
 exports.createQuiz = async (req, res) => {
-  const { title, description, questions, visibility, allowed_emails } = req.body;
+  const { title, description, questions, visibility, allowed_emails, has_timer } = req.body;
   const creator_id = req.user.id;
   const organization_id = (visibility === 'organization') ? req.user.organization_id : undefined;
 
   try {
+    let total_time = 0;
+    if (has_timer && questions) {
+      total_time = questions.reduce((sum, q) => sum + (q.time_limit || 30), 0);
+    }
+
     const quiz = await Quiz.create({
       title,
       description,
       creator_id,
       visibility,
       organization_id,
-      allowed_emails: Array.isArray(allowed_emails) ? allowed_emails : []
+      allowed_emails: Array.isArray(allowed_emails) ? allowed_emails : [],
+      has_timer: has_timer || false,
+      total_time
     });
 
     for (const q of questions) {
       const question = await Question.create({
         content: q.content,
         type: q.type,
-        quiz_id: quiz._id
+        quiz_id: quiz._id,
+        time_limit: q.time_limit || 30
       });
 
       for (const a of q.answers) {
@@ -82,7 +90,7 @@ exports.deleteQuiz = async (req, res) => {
 
 exports.updateQuiz = async (req, res) => {
   const quizId = req.params.id;
-  const { title, description, visibility, allowed_emails, questions } = req.body;
+  const { title, description, visibility, allowed_emails, questions, has_timer } = req.body;
   const { id: userId, role: userRole } = req.user;
 
   try {
@@ -94,10 +102,17 @@ exports.updateQuiz = async (req, res) => {
     if (!isOwner && !isAdmin)
       return res.status(403).json({ message: 'Non autorisé à modifier ce quiz' });
 
+    let total_time = 0;
+    if (has_timer && questions) {
+      total_time = questions.reduce((sum, q) => sum + (q.time_limit || 30), 0);
+    }
+
     quiz.title = title;
     quiz.description = description;
     quiz.visibility = visibility || 'public';
     quiz.allowed_emails = Array.isArray(allowed_emails) ? allowed_emails : [];
+    quiz.has_timer = has_timer || false;
+    quiz.total_time = total_time;
     await quiz.save();
 
     const oldQuestions = await Question.find({ quiz_id: quizId });
@@ -115,7 +130,11 @@ exports.updateQuiz = async (req, res) => {
       if (q._id) {
         question = await Question.findByIdAndUpdate(
           q._id,
-          { content: q.content, type: q.type },
+          { 
+            content: q.content, 
+            type: q.type,
+            time_limit: q.time_limit || 30
+          },
           { new: true }
         );
 
@@ -132,8 +151,17 @@ exports.updateQuiz = async (req, res) => {
         question = await Question.create({
           content: q.content,
           type: q.type,
-          quiz_id: quizId
+          quiz_id: quizId,
+          time_limit: q.time_limit || 30
         });
+
+        for (const a of q.answers) {
+          await Answer.create({
+            content: a.content,
+            is_correct: a.is_correct,
+            question_id: question._id
+          });
+        }
       }
     }
 

@@ -21,6 +21,23 @@
         </p>
       </div>
 
+      <!-- Timer Section -->
+      <div *ngIf="hasTimer" class="timer-container">
+        <mat-card class="timer-card">
+          <mat-card-content>
+            <div class="timer-display">
+              <mat-icon [class.timer-warning]="timeRemaining <= 10">access_time</mat-icon>
+              <span [class.timer-warning]="timeRemaining <= 10">{{ formatTime(timeRemaining) }}</span>
+            </div>
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="timeRemainingPercentage"
+              [color]="timeRemaining <= 10 ? 'warn' : 'primary'">
+            </mat-progress-bar>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <mat-card class="question-card">
         <mat-card-content>
           <h3 class="question-title">{{ currentQuestion.content }}</h3>
@@ -45,23 +62,13 @@
 
       <div class="navigation-container">
         <div class="navigation-row">
-          <button *ngIf="!isFirstQuestion" mat-stroked-button color="accent" (click)="previousQuestion()">
-            <mat-icon>arrow_back</mat-icon>
-            Précédent
-          </button>
-
-          <button *ngIf="!isLastQuestion" mat-raised-button color="primary" (click)="nextQuestion()"
-            [disabled]="!hasAnsweredCurrentQuestion()">
-            Suivant
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-        </div>
-
-        <div class="navigation-finish d-flex justify-content-center align-items-center">
-          <button *ngIf="isLastQuestion" mat-raised-button color="primary" (click)="finishQuiz()"
-            [disabled]="!hasAnsweredCurrentQuestion()">
-            Terminer
-            <mat-icon>check</mat-icon>
+          <button mat-raised-button 
+                  color="primary" 
+                  (click)="validateCurrentAnswer()"
+                  [disabled]="!hasAnsweredCurrentQuestion()">
+            <span *ngIf="!isLastQuestion">Valider la réponse</span>
+            <span *ngIf="isLastQuestion">Terminer le quiz</span>
+            <mat-icon>{{ isLastQuestion ? 'check' : 'check_circle' }}</mat-icon>
           </button>
         </div>
       </div>

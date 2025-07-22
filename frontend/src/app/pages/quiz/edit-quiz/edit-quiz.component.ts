@@ -10,12 +10,34 @@ import { SharedModule } from '../../../shared/shared.module';
 @Component({
   selector: 'app-edit-quiz',
   imports: [SharedModule],
-  templateUrl: './edit-quiz.component.html'
+  templateUrl: './edit-quiz.component.html',
+  styleUrls: ['./edit-quiz.component.scss'],
 })
 export class EditQuizComponent implements OnInit {
   quizId = '';
   form: FormGroup;
   errorMessage = '';
+
+  get hasTimer(): boolean {
+    return this.form.get('has_timer')?.value || false;
+  }
+
+  get totalTime(): number {
+    if (!this.hasTimer) return 0;
+    return this.questions.controls.reduce((total, question) => {
+      const timeLimit = question.get('time_limit')?.value || 30;
+      return total + timeLimit;
+    }, 0);
+  }
+
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    }
+    return `${remainingSeconds}s`;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -30,7 +52,8 @@ export class EditQuizComponent implements OnInit {
       description: '',
       visibility: 'public',
       allowed_emails: this.fb.array([]),
-      questions: this.fb.array([])
+      questions: this.fb.array([]),
+      has_timer: false
     });
   }
 
@@ -41,7 +64,8 @@ export class EditQuizComponent implements OnInit {
         this.form.patchValue({
           title: data.title,
           description: data.description,
-          visibility: data.visibility || 'public'
+          visibility: data.visibility || 'public',
+          has_timer: data.has_timer || false
         });
         this.questions.clear();
         this.allowedEmails.clear();
@@ -75,6 +99,7 @@ export class EditQuizComponent implements OnInit {
     const question = this.fb.group({
       content: [q?.content || '', Validators.required],
       type: q?.type || 'QCM',
+      time_limit: [q?.time_limit || 30, [Validators.required, Validators.min(5), Validators.max(300)]],
       answers: this.fb.array(
         (q?.answers && q.answers.length > 0
           ? q.answers.map((a: any) =>

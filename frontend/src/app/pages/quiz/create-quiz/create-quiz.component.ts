@@ -11,12 +11,34 @@ import { SharedModule } from '../../../shared/shared.module';
   selector: 'app-create-quiz',
   imports: [SharedModule],
   templateUrl: './create-quiz.component.html',
+  styleUrls: ['./create-quiz.component.scss'],
 })
 export class CreateQuizComponent implements OnInit {
   form: FormGroup;
   errorMessage = '';
   hasOrganization = false;
   organizationName: string | null = null;
+
+  get hasTimer(): boolean {
+    return this.form.get('has_timer')?.value || false;
+  }
+
+  get totalTime(): number {
+    if (!this.hasTimer) return 0;
+    return this.questions.controls.reduce((total, question) => {
+      const timeLimit = question.get('time_limit')?.value || 30;
+      return total + timeLimit;
+    }, 0);
+  }
+
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    }
+    return `${remainingSeconds}s`;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -32,6 +54,7 @@ export class CreateQuizComponent implements OnInit {
       allowed_emails: this.fb.array([]),
       questions: this.fb.array([]),
       creator_id: '',
+      has_timer: false,
     });
     this.addQuestion();
   }
@@ -85,6 +108,7 @@ export class CreateQuizComponent implements OnInit {
     const question = this.fb.group({
       content: ['', Validators.required],
       type: 'QCM',
+      time_limit: [30, [Validators.required, Validators.min(5), Validators.max(300)]],
       answers: this.fb.array([
         this.fb.group({
           content: ['', Validators.required],

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
@@ -12,13 +12,19 @@ import { NotificationService } from '../../../services/notification/notification
   templateUrl: './play-quiz.component.html',
   styleUrls: ['./play-quiz.component.scss']
 })
-export class PlayQuizComponent implements OnInit {
+export class PlayQuizComponent implements OnInit, OnDestroy {
   quizId = '';
+  quiz: any = null;
   questions: any[] = [];
   form: FormGroup;
   score: number | null = null;
   currentQuestionIndex = 0;
   showResults = false;
+  
+  timeRemaining = 0;
+  timerInterval: any;
+  hasTimer = false;
+  totalTime = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -34,7 +40,16 @@ export class PlayQuizComponent implements OnInit {
     this.quizId = this.route.snapshot.paramMap.get('id') || '';
     this.http.get<any>(`${environment.apiUrl}/quiz/${this.quizId}`).subscribe({
       next: data => {
+        this.quiz = data;
         this.questions = data.questions;
+        this.hasTimer = data.has_timer || false;
+        
+        if (this.hasTimer) {
+          this.timeRemaining = this.questions[0]?.time_limit || 30;
+          this.totalTime = data.total_time || 0;
+          this.startTimer();
+        }
+        
         for (let q of this.questions) {
           if (q.type === 'QCM') {
             const answersFormArray = this.fb.array(
@@ -97,19 +112,8 @@ export class PlayQuizComponent implements OnInit {
     }
   }
 
-  nextQuestion() {
-    if (this.currentQuestionIndex < this.questions.length - 1) {
-      this.currentQuestionIndex++;
-    }
-  }
-
-  previousQuestion() {
-    if (this.currentQuestionIndex > 0) {
-      this.currentQuestionIndex--;
-    }
-  }
-
   finishQuiz() {
+    this.stopTimer();
     this.calculateScore();
     this.showResults = true;
   }
@@ -138,5 +142,61 @@ export class PlayQuizComponent implements OnInit {
 
   onSubmit() {
     this.finishQuiz();
+  }
+
+  startTimer() {
+    if (!this.hasTimer) return;
+    
+    this.timerInterval = setInterval(() => {
+      this.timeRemaining--;
+      if (this.timeRemaining <= 0) {
+        this.validateCurrentAnswer();
+      }
+    }, 1000);
+  }
+
+  stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  resetTimerForQuestion() {
+    this.stopTimer();
+    if (this.hasTimer && this.currentQuestion) {
+      this.timeRemaining = this.currentQuestion.time_limit || 30;
+      this.startTimer();
+    }
+  }
+
+  validateCurrentAnswer() {
+    this.stopTimer();
+    
+    if (this.isLastQuestion) {
+      this.finishQuiz();
+    } else {
+      this.currentQuestionIndex++;
+      this.resetTimerForQuestion();
+    }
+  }
+
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes > 0) {
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${remainingSeconds}s`;
+  }
+
+  get timeRemainingPercentage(): number {
+    if (!this.hasTimer || !this.currentQuestion) return 100;
+    const maxTime = this.currentQuestion.time_limit || 30;
+    return (this.timeRemaining / maxTime) * 100;
+  }
+
+  ngOnDestroy() {
+    this.stopTimer();
   }
 }

@@ -11,6 +11,8 @@ const quizSchema = new mongoose.Schema({
     default: 'public'
   },
   allowed_emails: [{ type: String }],
+  has_timer: { type: Boolean, default: false },
+  total_time: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now }
 });
 
