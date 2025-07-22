@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 import { NotificationService } from '../../../services/notification/notification.service';
@@ -25,6 +26,9 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
   timerInterval: any;
   hasTimer = false;
   totalTime = 0;
+
+  // Pour les questions de type "ordre"
+  orderAnswers: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -56,10 +60,16 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
               q.answers.map(() => this.fb.control(false))
             );
             this.form.addControl(q._id, answersFormArray);
+          } else if (q.type === 'ordre') {
+            // Pour les questions d'ordre, on mélange les réponses
+            this.form.addControl(q._id, this.fb.control([]));
           } else {
             this.form.addControl(q._id, this.fb.control(null));
           }
         }
+        
+        // Initialiser les réponses mélangées pour la première question si c'est du type "ordre"
+        this.initializeOrderAnswers();
       },
       error: () => {
         this.notification.showError('Quiz introuvable');
@@ -78,6 +88,19 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
 
   get isFirstQuestion() {
     return this.currentQuestionIndex === 0;
+  }
+
+  initializeOrderAnswers() {
+    if (this.currentQuestion && this.currentQuestion.type === 'ordre') {
+      // Créer une copie mélangée des réponses
+      this.orderAnswers = [...this.currentQuestion.answers].sort(() => Math.random() - 0.5);
+      this.form.get(this.currentQuestion._id)?.setValue([...this.orderAnswers]);
+    }
+  }
+
+  onDrop(event: CdkDragDrop<any[]>) {
+    moveItemInArray(this.orderAnswers, event.previousIndex, event.currentIndex);
+    this.form.get(this.currentQuestion._id)?.setValue([...this.orderAnswers]);
   }
 
   getAnswersFormArray(questionId: string): FormArray {
@@ -107,6 +130,8 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     if (this.currentQuestion.type === 'QCM') {
       const answersArray = this.getAnswersFormArray(this.currentQuestion._id);
       return answersArray.value.some((selected: boolean) => selected);
+    } else if (this.currentQuestion.type === 'ordre') {
+      return this.orderAnswers.length > 0;
     } else {
       return this.form.get(this.currentQuestion._id)?.value !== null;
     }
@@ -128,6 +153,17 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
         const isCorrect = selectedAnswers.length === correctAnswers.length &&
           selectedAnswers.every((selected: boolean, index: number) => 
             selected === correctAnswers[index]
+          );
+        
+        if (isCorrect) total++;
+      } else if (question.type === 'ordre') {
+        const userOrder = this.form.value[question._id];
+        const correctOrder = [...question.answers].sort((a, b) => a.correct_order - b.correct_order);
+        
+        // Vérifier si l'ordre utilisateur correspond à l'ordre correct
+        const isCorrect = userOrder.length === correctOrder.length &&
+          userOrder.every((answer: any, index: number) => 
+            answer._id === correctOrder[index]._id
           );
         
         if (isCorrect) total++;
@@ -177,6 +213,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
       this.finishQuiz();
     } else {
       this.currentQuestionIndex++;
+      this.initializeOrderAnswers(); // Réinitialiser pour la nouvelle question d'ordre
       this.resetTimerForQuestion();
     }
   }

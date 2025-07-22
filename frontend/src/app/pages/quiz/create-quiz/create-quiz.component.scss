@@ -23,6 +23,23 @@
   gap: 1em;
 }
 
+.order-field {
+  width: 80px;
+  min-width: 80px;
+}
+
+.ordre-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+  color: #1976d2;
+  font-size: 0.9em;
+  padding: 0.5em;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+}
+
 .error-message {
   color: red;
   margin-bottom: 1em;

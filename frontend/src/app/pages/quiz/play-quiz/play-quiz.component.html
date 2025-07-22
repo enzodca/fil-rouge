@@ -50,7 +50,23 @@
             </button>
           </div>
 
-          <div *ngIf="currentQuestion.type !== 'QCM'" class="answers-container">
+          <div *ngIf="currentQuestion.type === 'ordre'" class="order-container">
+            <div class="order-instructions">
+              <mat-icon>drag_indicator</mat-icon>
+              <span>Glissez-déposez les éléments pour les remettre dans le bon ordre</span>
+            </div>
+            <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="order-list">
+              <div *ngFor="let answer of orderAnswers; let i = index" cdkDrag class="order-item">
+                <div class="order-item-content">
+                  <mat-icon cdkDragHandle>drag_indicator</mat-icon>
+                  <span class="order-number">{{ i + 1 }}.</span>
+                  <span class="order-text">{{ answer.content }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre'" class="answers-container">
             <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
               [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
               class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">

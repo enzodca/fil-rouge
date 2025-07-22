@@ -104,6 +104,10 @@ export class CreateQuizComponent implements OnInit {
     return this.questions.at(questionIndex).get('answers') as FormArray;
   }
 
+  getQuestionType(questionIndex: number): string {
+    return this.questions.at(questionIndex).get('type')?.value || 'QCM';
+  }
+
   addQuestion() {
     const question = this.fb.group({
       content: ['', Validators.required],
@@ -113,10 +117,12 @@ export class CreateQuizComponent implements OnInit {
         this.fb.group({
           content: ['', Validators.required],
           is_correct: false,
+          correct_order: [0]
         }),
         this.fb.group({
           content: ['', Validators.required],
           is_correct: false,
+          correct_order: [0]
         }),
       ]),
     });
@@ -129,7 +135,11 @@ export class CreateQuizComponent implements OnInit {
 
   addAnswer(qIndex: number) {
     this.getAnswers(qIndex).push(
-      this.fb.group({ content: ['', Validators.required], is_correct: false })
+      this.fb.group({ 
+        content: ['', Validators.required], 
+        is_correct: false,
+        correct_order: [0]
+      })
     );
   }
 
@@ -179,8 +189,24 @@ export class CreateQuizComponent implements OnInit {
         return 'Chaque question doit avoir un contenu.';
       if (!q.answers || q.answers.length < 2)
         return 'Chaque question doit avoir au moins deux réponses.';
-      if (!q.answers.some((a: any) => a.is_correct))
-        return 'Chaque question doit avoir au moins une réponse correcte.';
+
+      if (q.type === 'ordre') {
+        // Validation spécifique pour les questions d'ordre
+        const orders = q.answers.map((a: any) => a.correct_order);
+        const uniqueOrders = [...new Set(orders)];
+        if (uniqueOrders.length !== q.answers.length) {
+          return 'Chaque réponse d\'une question d\'ordre doit avoir un ordre unique.';
+        }
+        for (let order of orders) {
+          if (order < 1 || order > q.answers.length) {
+            return `L'ordre des réponses doit être entre 1 et ${q.answers.length}.`;
+          }
+        }
+      } else {
+        // Validation pour QCM et autres types
+        if (!q.answers.some((a: any) => a.is_correct))
+          return 'Chaque question doit avoir au moins une réponse correcte.';
+      }
 
       for (let j = 0; j < q.answers.length; j++) {
         if (!q.answers[j].content || !q.answers[j].content.trim()) {

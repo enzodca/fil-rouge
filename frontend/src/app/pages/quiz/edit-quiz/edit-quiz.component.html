@@ -82,17 +82,48 @@
 
               <div formArrayName="answers">
                 <h4>Réponses</h4>
-                <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Réponse</mat-label>
-                    <input matInput type="text" formControlName="content" placeholder="Réponse" />
-                  </mat-form-field>
-                  <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
-                  <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
-                          *ngIf="getAnswers(i).length > 2">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                
+                <!-- Réponses pour QCM et autres types classiques -->
+                <div *ngIf="getQuestionType(i) === 'QCM' || getQuestionType(i) === 'intrus'">
+                  <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Réponse</mat-label>
+                      <input matInput type="text" formControlName="content" placeholder="Réponse" />
+                    </mat-form-field>
+                    <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
+                    <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
+                            *ngIf="getAnswers(i).length > 2">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
                 </div>
+
+                <!-- Réponses pour type "ordre" -->
+                <div *ngIf="getQuestionType(i) === 'ordre'">
+                  <p class="order-instruction">
+                    <mat-icon>info</mat-icon>
+                    Définissez l'ordre correct des éléments (1 = premier, 2 = deuxième, etc.)
+                  </p>
+                  <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-order-row">
+                    <mat-form-field appearance="outline" class="answer-content">
+                      <mat-label>Élément</mat-label>
+                      <input matInput type="text" formControlName="content" placeholder="Élément à ordonner" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="order-field">
+                      <mat-label>Ordre</mat-label>
+                      <mat-select formControlName="correct_order">
+                        <mat-option *ngFor="let num of [].constructor(getAnswers(i).length); let k=index" [value]="k + 1">
+                          {{ k + 1 }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
+                            *ngIf="getAnswers(i).length > 2">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
                 <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
               </div>
             </mat-card-content>

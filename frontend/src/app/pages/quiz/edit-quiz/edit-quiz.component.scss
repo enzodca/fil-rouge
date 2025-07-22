@@ -23,6 +23,33 @@
   gap: 1em;
 }
 
+.answer-order-row {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 1em;
+
+  .answer-content {
+    flex: 1;
+  }
+
+  .order-field {
+    width: 120px;
+  }
+}
+
+.order-instruction {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  color: #1976d2;
+  font-size: 0.9em;
+}
+
 .error-message {
   color: red;
   margin-bottom: 1em;

@@ -36,7 +36,8 @@ exports.createQuiz = async (req, res) => {
         await Answer.create({
           content: a.content,
           is_correct: a.is_correct,
-          question_id: question._id
+          question_id: question._id,
+          correct_order: a.correct_order || 0
         });
       }
     }
@@ -144,7 +145,8 @@ exports.updateQuiz = async (req, res) => {
           await Answer.create({
             content: a.content,
             is_correct: a.is_correct,
-            question_id: question._id
+            question_id: question._id,
+            correct_order: a.correct_order || 0
           });
         }
       } else {
@@ -159,7 +161,8 @@ exports.updateQuiz = async (req, res) => {
           await Answer.create({
             content: a.content,
             is_correct: a.is_correct,
-            question_id: question._id
+            question_id: question._id,
+            correct_order: a.correct_order || 0
           });
         }
       }
