@@ -29,8 +29,6 @@
             <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
               [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
               class="answer-button" (click)="toggleAnswer(currentQuestion._id, j)">
-              <mat-icon *ngIf="isAnswerSelected(j)">check_box</mat-icon>
-              <mat-icon *ngIf="!isAnswerSelected(j)">check_box_outline_blank</mat-icon>
               {{ answer.content }}
             </button>
           </div>
@@ -39,8 +37,6 @@
             <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
               [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
               class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">
-              <mat-icon *ngIf="isAnswerSelected(j)">radio_button_checked</mat-icon>
-              <mat-icon *ngIf="!isAnswerSelected(j)">radio_button_unchecked</mat-icon>
               {{ answer.content }}
             </button>
           </div>

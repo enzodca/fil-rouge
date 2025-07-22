@@ -38,27 +38,27 @@
   min-height: 60px;
   padding: 1em;
   font-size: 1.1em;
-  text-align: left;
+  text-align: center;
   border: 2px solid #ddd;
   border-radius: 8px;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1em;
+  justify-content: center;
 
   &:hover {
     background-color: #f5f5f5;
     border-color: #bbb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   &.selected {
-    background-color: #e3f2fd;
-    border-color: #2196f3;
-    color: #1976d2;
-  }
-
-  mat-icon {
-    flex-shrink: 0;
+    background-color: #2196f3;
+    border-color: #1976d2;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
   }
 }
 

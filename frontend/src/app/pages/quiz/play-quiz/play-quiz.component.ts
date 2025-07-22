@@ -9,7 +9,8 @@ import { NotificationService } from '../../../services/notification/notification
 @Component({
   selector: 'app-play-quiz',
   imports: [SharedModule],
-  templateUrl: './play-quiz.component.html'
+  templateUrl: './play-quiz.component.html',
+  styleUrls: ['./play-quiz.component.scss']
 })
 export class PlayQuizComponent implements OnInit {
   quizId = '';
