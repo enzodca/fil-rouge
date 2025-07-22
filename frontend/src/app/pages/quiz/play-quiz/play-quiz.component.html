@@ -1,40 +1,74 @@
 <mat-card>
   <mat-card-title class="center-title">Jouer au quiz</mat-card-title>
   <mat-card-content>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="questions.length">
-      <div *ngFor="let q of questions; let i = index" style="margin-bottom: 2em;">
-        <mat-card class="question-card">
-          <mat-card-content>
-            <p><strong>{{ q.content }}</strong></p>
-            
-            <div *ngIf="q.type === 'QCM'" [formArrayName]="q._id">
-              <div *ngFor="let a of q.answers; let j = index">
-                <mat-checkbox [formControlName]="j" class="full-width-checkbox">
-                  {{ a.content }}
-                </mat-checkbox>
-              </div>
-            </div>
-            
-            <mat-radio-group *ngIf="q.type !== 'QCM'" [formControlName]="q._id">
-              <div *ngFor="let a of q.answers">
-                <mat-radio-button [value]="a.content" class="full-width-radio">
-                  {{ a.content }}
-                </mat-radio-button>
-              </div>
-            </mat-radio-group>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <button mat-raised-button color="primary" type="submit">Valider mes réponses</button>
-    </form>
-
-    <div *ngIf="score !== null" style="margin-top: 2em; text-align: center;">
-      <h3>Score : {{ score }} / {{ questions.length }}</h3>
+    <div *ngIf="showResults" style="text-align: center;">
+      <h3>Quiz terminé !</h3>
+      <h2>Score : {{ score }} / {{ questions.length }}</h2>
+      <p>{{ (score! / questions.length * 100) | number:'1.0-0' }}% de réussite</p>
       <a routerLink="/quiz-list">
-        <button mat-stroked-button color="accent">
+        <button mat-raised-button color="primary">
           <mat-icon>arrow_back</mat-icon> Retour aux quiz
         </button>
       </a>
+    </div>
+
+    <div *ngIf="!showResults && currentQuestion" class="question-container">
+      <div class="progress-container">
+        <mat-progress-bar mode="determinate" [value]="((currentQuestionIndex + 1) / questions.length) * 100">
+        </mat-progress-bar>
+        <p class="progress-text">
+          Question {{ currentQuestionIndex + 1 }} sur {{ questions.length }}
+        </p>
+      </div>
+
+      <mat-card class="question-card">
+        <mat-card-content>
+          <h3 class="question-title">{{ currentQuestion.content }}</h3>
+
+          <div *ngIf="currentQuestion.type === 'QCM'" class="answers-container">
+            <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
+              [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
+              class="answer-button" (click)="toggleAnswer(currentQuestion._id, j)">
+              <mat-icon *ngIf="isAnswerSelected(j)">check_box</mat-icon>
+              <mat-icon *ngIf="!isAnswerSelected(j)">check_box_outline_blank</mat-icon>
+              {{ answer.content }}
+            </button>
+          </div>
+
+          <div *ngIf="currentQuestion.type !== 'QCM'" class="answers-container">
+            <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
+              [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
+              class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">
+              <mat-icon *ngIf="isAnswerSelected(j)">radio_button_checked</mat-icon>
+              <mat-icon *ngIf="!isAnswerSelected(j)">radio_button_unchecked</mat-icon>
+              {{ answer.content }}
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="navigation-container">
+        <div class="navigation-row">
+          <button *ngIf="!isFirstQuestion" mat-stroked-button color="accent" (click)="previousQuestion()">
+            <mat-icon>arrow_back</mat-icon>
+            Précédent
+          </button>
+
+          <button *ngIf="!isLastQuestion" mat-raised-button color="primary" (click)="nextQuestion()"
+            [disabled]="!hasAnsweredCurrentQuestion()">
+            Suivant
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+
+        <div class="navigation-finish d-flex justify-content-center align-items-center">
+          <button *ngIf="isLastQuestion" mat-raised-button color="primary" (click)="finishQuiz()"
+            [disabled]="!hasAnsweredCurrentQuestion()">
+            Terminer
+            <mat-icon>check</mat-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </mat-card-content>
 </mat-card>

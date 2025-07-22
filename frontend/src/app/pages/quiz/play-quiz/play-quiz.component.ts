@@ -15,6 +15,8 @@ export class PlayQuizComponent implements OnInit {
   questions: any[] = [];
   form: FormGroup;
   score: number | null = null;
+  currentQuestionIndex = 0;
+  showResults = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -48,11 +50,68 @@ export class PlayQuizComponent implements OnInit {
     });
   }
 
+  get currentQuestion() {
+    return this.questions[this.currentQuestionIndex];
+  }
+
+  get isLastQuestion() {
+    return this.currentQuestionIndex === this.questions.length - 1;
+  }
+
+  get isFirstQuestion() {
+    return this.currentQuestionIndex === 0;
+  }
+
   getAnswersFormArray(questionId: string): FormArray {
     return this.form.get(questionId) as FormArray;
   }
 
-  onSubmit() {
+  toggleAnswer(questionId: string, answerIndex: number) {
+    const answersArray = this.getAnswersFormArray(questionId);
+    const currentValue = answersArray.at(answerIndex).value;
+    answersArray.at(answerIndex).setValue(!currentValue);
+  }
+
+  selectAnswer(questionId: string, answerContent: string) {
+    this.form.get(questionId)?.setValue(answerContent);
+  }
+
+  isAnswerSelected(answerIndex: number): boolean {
+    if (this.currentQuestion.type === 'QCM') {
+      const answersArray = this.getAnswersFormArray(this.currentQuestion._id);
+      return answersArray.at(answerIndex).value;
+    } else {
+      return this.form.get(this.currentQuestion._id)?.value === this.currentQuestion.answers[answerIndex].content;
+    }
+  }
+
+  hasAnsweredCurrentQuestion(): boolean {
+    if (this.currentQuestion.type === 'QCM') {
+      const answersArray = this.getAnswersFormArray(this.currentQuestion._id);
+      return answersArray.value.some((selected: boolean) => selected);
+    } else {
+      return this.form.get(this.currentQuestion._id)?.value !== null;
+    }
+  }
+
+  nextQuestion() {
+    if (this.currentQuestionIndex < this.questions.length - 1) {
+      this.currentQuestionIndex++;
+    }
+  }
+
+  previousQuestion() {
+    if (this.currentQuestionIndex > 0) {
+      this.currentQuestionIndex--;
+    }
+  }
+
+  finishQuiz() {
+    this.calculateScore();
+    this.showResults = true;
+  }
+
+  calculateScore() {
     let total = 0;
     for (const question of this.questions) {
       if (question.type === 'QCM') {
@@ -72,5 +131,9 @@ export class PlayQuizComponent implements OnInit {
       }
     }
     this.score = total;
+  }
+
+  onSubmit() {
+    this.finishQuiz();
   }
 }

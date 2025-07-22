@@ -15,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 const MATERIAL_MODULES = [
   MatButtonModule,
@@ -26,7 +27,8 @@ const MATERIAL_MODULES = [
   MatIconModule,
   MatRadioModule,
   MatMenuModule,
-  MatListModule
+  MatListModule,
+  MatProgressBarModule
 ];
 
 @NgModule({
