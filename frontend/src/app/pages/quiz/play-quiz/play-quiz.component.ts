@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
+import { NotificationService } from '../../../services/notification/notification.service';
 
 @Component({
   selector: 'app-play-quiz',
@@ -22,7 +23,8 @@ export class PlayQuizComponent implements OnInit {
     private route: ActivatedRoute,
     private http: HttpClient,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private notification: NotificationService
   ) {
     this.form = this.fb.group({});
   }
@@ -44,7 +46,7 @@ export class PlayQuizComponent implements OnInit {
         }
       },
       error: () => {
-        alert('Quiz introuvable');
+        this.notification.showError('Quiz introuvable');
         this.router.navigate(['/quiz-list']);
       }
     });

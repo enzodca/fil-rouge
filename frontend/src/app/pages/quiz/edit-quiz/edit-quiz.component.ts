@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth.service';
+import { NotificationService } from '../../../services/notification/notification.service';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 
@@ -21,7 +22,8 @@ export class EditQuizComponent implements OnInit {
     private http: HttpClient,
     private fb: FormBuilder,
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private notification: NotificationService
   ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
@@ -51,7 +53,7 @@ export class EditQuizComponent implements OnInit {
         }
       },
       error: err => {
-        alert('Quiz introuvable');
+        this.notification.showError('Quiz introuvable');
         this.router.navigate(['/quiz-list']);
       }
     });
@@ -124,7 +126,7 @@ export class EditQuizComponent implements OnInit {
 
     this.http.put(`${environment.apiUrl}/quiz/${this.quizId}`, this.form.value).subscribe({
       next: () => {
-        alert('Quiz mis à jour !');
+        this.notification.showSuccess('Quiz mis à jour !');
         this.router.navigate(['/quiz-list']);
       },
       error: err => this.errorMessage = 'Erreur : ' + (err.error?.message || 'Erreur inconnue')

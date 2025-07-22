@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { QuizService } from '../../../services/quiz/quiz.service';
+import { NotificationService } from '../../../services/notification/notification.service';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 
@@ -21,7 +22,8 @@ export class CreateQuizComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private auth: AuthService,
-    private quizService: QuizService
+    private quizService: QuizService,
+    private notification: NotificationService
   ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
@@ -63,7 +65,7 @@ export class CreateQuizComponent implements OnInit {
   }
 
   private handleNotConnected() {
-    alert('Non connecté !');
+    this.notification.showError('Non connecté !');
     this.router.navigate(['/login']);
   }
 
@@ -130,7 +132,7 @@ export class CreateQuizComponent implements OnInit {
 
     this.quizService.createQuiz(this.form.value).subscribe({
       next: () => {
-        alert('Quiz créé !');
+        this.notification.showSuccess('Quiz créé !');
         this.router.navigate(['/accueil']);
       },
       error: (err) =>
