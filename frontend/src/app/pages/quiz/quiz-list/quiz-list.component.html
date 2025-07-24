@@ -8,6 +8,11 @@
       </mat-card-title>
       <mat-card-content>
         <div class="quiz-description">{{ quiz.description }}</div>
+        <div class="question-types" *ngIf="quiz.questionTypes?.length">
+          <span *ngFor="let type of quiz.questionTypes" class="question-type-tag" [ngClass]="getTagClass(type)">
+            {{ getTypeLabel(type) }}
+          </span>
+        </div>
         <div class="timer-info" *ngIf="quiz.has_timer">
           <mat-icon class="timer-icon">access_time</mat-icon>
           <span class="timer-text">
@@ -23,7 +28,7 @@
           </button>
         </a>
         <button mat-stroked-button color="accent" *ngIf="quiz.visibility !== 'public' && canDelete(quiz)"
-            (click)="inviteUser(quiz._id)">
+          (click)="inviteUser(quiz._id)">
           <mat-icon>mail</mat-icon> Inviter
         </button>
         <button mat-stroked-button color="primary" *ngIf="canDelete(quiz)" [routerLink]="['/edit-quiz', quiz._id]">

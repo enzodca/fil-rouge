@@ -65,4 +65,21 @@ export class QuizListComponent implements OnInit {
     }
     return `${remainingSeconds}s`;
   }
+
+  getTagClass(type: string): string {
+    return type.toLowerCase();
+  }
+
+  getTypeLabel(type: string): string {
+    switch (type) {
+      case 'QCM':
+        return 'QCM';
+      case 'ordre':
+        return 'Ordre';
+      case 'intrus':
+        return 'Intrus';
+      default:
+        return type;
+    }
+  }
 }

@@ -51,7 +51,20 @@ exports.createQuiz = async (req, res) => {
 exports.getAllQuizzes = async (req, res) => {
   try {
     const quizzes = await Quiz.find().populate('creator_id', 'username');
-    res.json(quizzes);
+    
+    const TypeQuizzes = await Promise.all(
+      quizzes.map(async (quiz) => {
+        const questions = await Question.find({ quiz_id: quiz._id });
+        const questionTypes = [...new Set(questions.map(q => q.type))];
+        
+        return {
+          ...quiz.toObject(),
+          questionTypes
+        };
+      })
+    );
+    
+    res.json(TypeQuizzes);
   } catch (err) {
     res.status(500).json({ message: 'Erreur récupération quiz', error: err.message });
   }

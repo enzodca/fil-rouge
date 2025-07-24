@@ -25,6 +25,33 @@
   margin-bottom: 0.5em;
 }
 
+.question-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.question-type-tag {
+  padding: 0.25em 0.5em;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 500;
+  color: white;
+  
+  &.qcm {
+    background-color: #4caf50;
+  }
+  
+  &.ordre {
+    background-color: #ff9800;
+  }
+  
+  &.intrus {
+    background-color: #e91e63;
+  }
+}
+
 .timer-info {
   margin-bottom: 0.5em;
 }
