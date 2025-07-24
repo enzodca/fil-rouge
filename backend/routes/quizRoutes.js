@@ -35,7 +35,14 @@ router.get('/:id', auth, async (req, res) => {
     const full = [];
     for (const q of questions) {
       const answers = await Answer.find({ question_id: q._id });
-      full.push({ ...q.toObject(), answers });
+      const questionData = { ...q.toObject(), answers };
+
+      if (questionData.audio_data && questionData.audio_mimetype) {
+        questionData.audio_url = `data:${questionData.audio_mimetype};base64,${questionData.audio_data}`;
+        delete questionData.audio_data;
+      }
+      
+      full.push(questionData);
     }
 
     res.json({ ...quiz.toObject(), questions: full });

@@ -12,15 +12,22 @@ export interface Quiz {
   visibility: 'public' | 'private' | 'organization';
   allowed_emails: string[];
   questions: Question[];
+  has_timer?: boolean;
+  total_time?: number;
   created_at?: Date;
 }
 
 export interface Question {
   _id?: string;
   content: string;
-  type: 'QCM' | 'ordre' | 'intrus';
+  type: 'QCM' | 'ordre' | 'intrus' | 'association' | 'blind_test';
   quiz_id?: string;
   answers: Answer[];
+  time_limit?: number;
+  audio_file_name?: string;
+  audio_url?: string;
+  audio_data?: string;
+  audio_mimetype?: string;
 }
 
 export interface Answer {
@@ -28,6 +35,8 @@ export interface Answer {
   content: string;
   is_correct: boolean;
   question_id?: string;
+  correct_order?: number;
+  association_target?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,7 +48,6 @@ export class QuizService {
   createQuiz(quiz: Partial<Quiz>): Observable<{ message: string; quizId: string }> {
     return this.http.post<{ message: string; quizId: string }>(`${this.API_URL}/create`, quiz);
   }
-
 
   getAllQuizzes(): Observable<Quiz[]> {
     return this.http.get<Quiz[]>(`${this.API_URL}/all`);

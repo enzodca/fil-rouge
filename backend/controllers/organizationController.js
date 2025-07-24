@@ -60,7 +60,6 @@ exports.createOrganization = async (req, res) => {
     user.organization_role = 'chef';
     await user.save();
     
-    // Générer un nouveau token avec les informations de l'organisation
     const newToken = jwt.sign(
       {
         id: user._id,
@@ -249,7 +248,6 @@ exports.deleteOrganization = async (req, res) => {
     
     await Organization.findByIdAndDelete(orgId);
     
-    // Générer un nouveau token pour l'utilisateur qui a supprimé l'organisation
     const currentUser = await User.findById(userId);
     const newToken = jwt.sign(
       {
@@ -348,7 +346,6 @@ exports.leaveOrganization = async (req, res) => {
     user.organization_role = undefined;
     await user.save();
     
-    // Générer un nouveau token sans les informations de l'organisation
     const newToken = jwt.sign(
       {
         id: user._id,

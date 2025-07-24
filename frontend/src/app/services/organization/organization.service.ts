@@ -103,7 +103,6 @@ export class OrganizationService {
   }
 
   private updateUserOrganizationState(org: Organization | null): void {
-    // Utiliser les informations du token si disponibles, sinon utiliser org
     const state: UserOrganizationState = {
       organizationId: this.auth.getOrganizationId() || org?._id || null,
       organizationName: this.auth.getOrganizationName() || org?.name || null,
@@ -113,11 +112,9 @@ export class OrganizationService {
   }
 
   loadUserOrganizationState(): void {
-    // Charger directement depuis le token si possible
     if (this.auth.hasOrganization()) {
       this.updateUserOrganizationState(null);
     } else {
-      // Fallback vers l'API si pas d'info dans le token
       this.getMyOrganization().subscribe({
         next: (org) => this.updateUserOrganizationState(org),
         error: () => this.updateUserOrganizationState(null)

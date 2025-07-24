@@ -35,10 +35,29 @@
         <button mat-stroked-button color="primary" type="button" (click)="addEmail()">+ Ajouter email</button>
       </div>
 
+      <div class="timer-section">
+        <mat-checkbox formControlName="has_timer">
+          Activer le chronomètre
+        </mat-checkbox>
+        <div *ngIf="hasTimer" class="timer-info">
+          <mat-icon>access_time</mat-icon>
+          <span>Temps total estimé : {{ formatTime(totalTime) }}</span>
+        </div>
+      </div>
+
       <div formArrayName="questions">
         <h3>Questions</h3>
-        <div *ngFor="let q of questions.controls; let i=index" [formGroupName]="i" style="margin-bottom: 2em;">
+        <div *ngFor="let q of questions.controls; let i=index" [formGroupName]="i" class="question-container">
           <mat-card>
+            <mat-card-header>
+              <mat-card-title class="question-header">
+                <span>Question {{ i + 1 }}</span>
+                <button mat-icon-button color="warn" type="button" (click)="removeQuestion(i)"
+                  *ngIf="questions.length > 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card-title>
+            </mat-card-header>
             <mat-card-content>
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Question</mat-label>
@@ -51,19 +70,136 @@
                   <mat-option value="QCM">QCM</mat-option>
                   <mat-option value="ordre">Ordre</mat-option>
                   <mat-option value="intrus">Intrus</mat-option>
+                  <mat-option value="association">Association</mat-option>
+                  <mat-option value="blind_test">Blind Test</mat-option>
                 </mat-select>
+              </mat-form-field>
+
+              <mat-form-field *ngIf="hasTimer" appearance="outline" class="full-width">
+                <mat-label>Temps limite (secondes)</mat-label>
+                <input matInput type="number" formControlName="time_limit" min="5" max="300" placeholder="30" />
+                <mat-hint>Entre 5 et 300 secondes</mat-hint>
               </mat-form-field>
 
               <div formArrayName="answers">
                 <h4>Réponses</h4>
-                <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" style="display: flex; align-items: center; gap: 1em;">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Réponse</mat-label>
-                    <input matInput type="text" formControlName="content" placeholder="Réponse" />
-                  </mat-form-field>
-                  <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
+
+                <div *ngIf="getQuestionType(i) === 'association'" class="association-interface">
+                  <div class="association-columns">
+                    <div class="column">
+                      <h5>Éléments de gauche</h5>
+                      <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                        <mat-form-field appearance="outline" class="full-width"
+                          [class.duplicate-error]="hasLeftDuplicate(i, j)">
+                          <mat-label>Élément {{ j + 1 }}</mat-label>
+                          <input matInput type="text" formControlName="content" placeholder="Élément à associer" />
+                          <mat-error *ngIf="hasLeftDuplicate(i, j)">
+                            Cet élément existe déjà
+                          </mat-error>
+                        </mat-form-field>
+                        <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)"
+                          *ngIf="getAnswers(i).length > 2">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <h5>Éléments de droite (associations correctes)</h5>
+                      <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                        <mat-form-field appearance="outline" class="full-width"
+                          [class.duplicate-error]="hasRightDuplicate(i, j)">
+                          <mat-label>Association {{ j + 1 }}</mat-label>
+                          <input matInput type="text" formControlName="association_target"
+                            placeholder="Élément associé" />
+                          <mat-error *ngIf="hasRightDuplicate(i, j)">
+                            Cet élément existe déjà
+                          </mat-error>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="association-info">
+                    <mat-icon>info</mat-icon>
+                    <span>Créez des paires d'éléments à associer. L'ordre des éléments de droite correspond à celui de
+                      gauche.</span>
+                  </div>
                 </div>
-                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
+
+                <div *ngIf="getQuestionType(i) === 'blind_test'" class="blind-test-interface">
+                  <div class="audio-upload-section">
+                    <h5>Fichier audio</h5>
+                    <div class="audio-upload-area">
+                      <input type="file" #audioFile accept="audio/*" (change)="onAudioFileSelected($event, i)"
+                        class="audio-input" id="audio-{{i}}">
+                      <label for="audio-{{i}}" class="audio-upload-label">
+                        <mat-icon>audiotrack</mat-icon>
+                        <span *ngIf="!getAudioFileName(i)">Choisir un fichier audio</span>
+                        <span *ngIf="getAudioFileName(i)">{{ getAudioFileName(i) }}</span>
+                      </label>
+                      <button *ngIf="getAudioFileName(i)" mat-icon-button color="warn" type="button"
+                        (click)="removeAudioFile(i)" class="remove-audio-btn">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                    <div *ngIf="getAudioFileName(i)" class="audio-preview">
+                      <audio controls [src]="getAudioUrl(i)">
+                        Votre navigateur ne supporte pas l'élément audio.
+                      </audio>
+                    </div>
+                  </div>
+
+                  <div class="blind-test-answers">
+                    <h5>Réponses possibles</h5>
+                    <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Réponse {{ j + 1 }}</mat-label>
+                        <input matInput type="text" formControlName="content" placeholder="Titre, artiste, etc." />
+                      </mat-form-field>
+                      <mat-checkbox formControlName="is_correct">Correcte</mat-checkbox>
+                      <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)"
+                        *ngIf="getAnswers(i).length > 2">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="blind-test-info">
+                    <mat-icon>info</mat-icon>
+                    <span>Uploadez un fichier audio et créez les réponses possibles. Au moins une réponse doit être
+                      marquée comme correcte.</span>
+                  </div>
+                </div>
+
+                <div *ngIf="getQuestionType(i) !== 'association' && getQuestionType(i) !== 'blind_test'">
+                  <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Réponse</mat-label>
+                      <input matInput type="text" formControlName="content" placeholder="Réponse" />
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="getQuestionType(i) === 'ordre'" appearance="outline" class="order-field">
+                      <mat-label>Ordre</mat-label>
+                      <input matInput type="number" formControlName="correct_order" [min]="1"
+                        [max]="getAnswers(i).length" placeholder="1" />
+                    </mat-form-field>
+
+                    <mat-checkbox *ngIf="getQuestionType(i) !== 'ordre'"
+                      formControlName="is_correct">Correcte</mat-checkbox>
+
+                    <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)"
+                      *ngIf="getAnswers(i).length > 2">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+
+                  <div *ngIf="getQuestionType(i) === 'ordre'" class="ordre-info">
+                    <mat-icon>info</mat-icon>
+                    <span>Indiquez l'ordre correct (1, 2, 3...) pour chaque réponse</span>
+                  </div>
+                </div>
+
+                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter
+                  réponse</button>
               </div>
             </mat-card-content>
           </mat-card>
@@ -73,7 +209,7 @@
       <button mat-stroked-button color="accent" type="button" (click)="addQuestion()">+ Ajouter question</button>
       <br /><br />
       <button mat-raised-button color="primary" type="submit">Créer le quiz</button>
-      <div *ngIf="errorMessage" style="color: red; margin-bottom: 1em;">
+      <div *ngIf="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
     </form>

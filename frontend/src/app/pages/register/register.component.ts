@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
+import { NotificationService } from '../../services/notification/notification.service';
 import { SharedModule } from '../../shared/shared.module';
 
 @Component({
@@ -16,7 +17,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private notification: NotificationService
   ) {
     this.form = this.fb.group({
       username: ['', Validators.required],
@@ -32,10 +34,10 @@ export class RegisterComponent {
     }
     this.auth.register(this.form.value).subscribe({
       next: () => {
-        alert('Inscription réussie !');
+        this.notification.showSuccess('Inscription réussie !');
         this.router.navigate(['/login']);
       },
-      error: err => alert('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
+      error: err => this.notification.showError('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
     });
   }
 }

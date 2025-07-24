@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth/auth.service';
+import { NotificationService } from '../../../services/notification/notification.service';
 import { environment } from '../../../../environments/environment';
 import { SharedModule } from '../../../shared/shared.module';
 
@@ -14,7 +15,11 @@ export class QuizListComponent implements OnInit {
   role = '';
   quizzes: any[] = [];
 
-  constructor(private http: HttpClient, private auth: AuthService) {
+  constructor(
+    private http: HttpClient, 
+    private auth: AuthService,
+    private notification: NotificationService
+  ) {
     this.userId = this.auth.getUserId() || '';
     this.role = this.auth.getRole() || '';
   }
@@ -30,13 +35,16 @@ export class QuizListComponent implements OnInit {
   }
 
   deleteQuiz(id: string) {
-    if (!confirm('Supprimer ce quiz ?')) return;
-    this.http.delete(`${environment.apiUrl}/quiz/${id}`).subscribe({
-      next: () => {
-        this.quizzes = this.quizzes.filter(q => q._id !== id);
-        alert('Quiz supprimé');
-      },
-      error: err => alert('Erreur suppression : ' + (err.error?.message || 'Erreur inconnue'))
+    this.notification.confirm('Supprimer ce quiz ?').subscribe(confirmed => {
+      if (confirmed) {
+        this.http.delete(`${environment.apiUrl}/quiz/${id}`).subscribe({
+          next: () => {
+            this.quizzes = this.quizzes.filter(q => q._id !== id);
+            this.notification.showSuccess('Quiz supprimé');
+          },
+          error: err => this.notification.showError('Erreur suppression : ' + (err.error?.message || 'Erreur inconnue'))
+        });
+      }
     });
   }
 
@@ -44,8 +52,36 @@ export class QuizListComponent implements OnInit {
     const email = prompt('Email à inviter ?');
     if (!email) return;
     this.http.put(`${environment.apiUrl}/quiz/${quizId}/invite`, { email }).subscribe({
-      next: () => alert('Utilisateur invité'),
-      error: err => alert('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
+      next: () => this.notification.showSuccess('Utilisateur invité'),
+      error: err => this.notification.showError('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
     });
+  }
+
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    }
+    return `${remainingSeconds}s`;
+  }
+
+  getTagClass(type: string): string {
+    return type.toLowerCase();
+  }
+
+  getTypeLabel(type: string): string {
+    switch (type) {
+      case 'QCM':
+        return 'QCM';
+      case 'ordre':
+        return 'Ordre';
+      case 'intrus':
+        return 'Intrus';
+      case 'association':
+        return 'Association';
+      default:
+        return type;
+    }
   }
 }

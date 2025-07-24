@@ -15,6 +15,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
+
+// CDK modules
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 const MATERIAL_MODULES = [
   MatButtonModule,
@@ -26,7 +32,11 @@ const MATERIAL_MODULES = [
   MatIconModule,
   MatRadioModule,
   MatMenuModule,
-  MatListModule
+  MatListModule,
+  MatProgressBarModule,
+  MatSnackBarModule,
+  MatDialogModule,
+  DragDropModule
 ];
 
 @NgModule({

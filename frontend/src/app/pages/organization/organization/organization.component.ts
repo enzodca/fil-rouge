@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from '../../../shared/shared.module';
 import { OrganizationService, Organization } from '../../../services/organization/organization.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { NotificationService } from '../../../services/notification/notification.service';
 
 @Component({
   selector: 'app-organization',
@@ -23,7 +24,8 @@ export class OrganizationComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private organizationService: OrganizationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notification: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -73,13 +75,13 @@ export class OrganizationComponent implements OnInit {
 
     this.organizationService.inviteToOrganization(this.organization._id!, this.inviteEmail).subscribe({
       next: (response) => {
-        alert(response.message);
+        this.notification.showSuccess(response.message);
         this.inviteEmail = '';
 
         this.loadOrganization(this.organization!._id!);
       },
       error: (errorMessage) => {
-        alert('Erreur : ' + errorMessage);
+        this.notification.showError('Erreur : ' + errorMessage);
       }
     });
   }
@@ -89,53 +91,63 @@ export class OrganizationComponent implements OnInit {
 
     this.organizationService.updateOrganizationName(this.organization._id!, this.newName).subscribe({
       next: (response) => {
-        alert(response.message);
+        this.notification.showSuccess(response.message);
         this.organization!.name = response.organization.name;
       },
       error: (errorMessage) => {
-        alert('Erreur : ' + errorMessage);
+        this.notification.showError('Erreur : ' + errorMessage);
       }
     });
   }
 
   removeMember(memberId: string): void {
-    if (!this.organization || !confirm('Retirer ce membre ?')) return;
+    if (!this.organization) return;
 
-    this.organizationService.removeMember(this.organization._id!, memberId).subscribe({
-      next: (response) => {
-        alert(response.message);
-        this.loadOrganization(this.organization!._id!);
-      },
-      error: (errorMessage) => {
-        alert('Erreur : ' + errorMessage);
+    this.notification.confirm('Retirer ce membre ?').subscribe(confirmed => {
+      if (confirmed) {
+        this.organizationService.removeMember(this.organization!._id!, memberId).subscribe({
+          next: (response) => {
+            this.notification.showSuccess(response.message);
+            this.loadOrganization(this.organization!._id!);
+          },
+          error: (errorMessage) => {
+            this.notification.showError('Erreur : ' + errorMessage);
+          }
+        });
       }
     });
   }
 
   deleteOrg(): void {
-    if (!this.organization || !confirm('Supprimer définitivement votre organisation ?')) return;
+    if (!this.organization) return;
 
-    this.organizationService.deleteOrganization(this.organization._id!).subscribe({
-      next: (response) => {
-        alert(response.message);
-        this.router.navigate(['/accueil']);
-      },
-      error: (errorMessage) => {
-        alert('Erreur : ' + errorMessage);
+    this.notification.confirm('Supprimer définitivement votre organisation ?').subscribe(confirmed => {
+      if (confirmed) {
+        this.organizationService.deleteOrganization(this.organization!._id!).subscribe({
+          next: (response) => {
+            this.notification.showSuccess(response.message);
+            this.router.navigate(['/accueil']);
+          },
+          error: (errorMessage) => {
+            this.notification.showError('Erreur : ' + errorMessage);
+          }
+        });
       }
     });
   }
 
   leaveOrganization(): void {
-    if (!confirm('Quitter cette organisation ?')) return;
-
-    this.organizationService.leaveOrganization().subscribe({
-      next: (response) => {
-        alert(response.message);
-        this.router.navigate(['/accueil']);
-      },
-      error: (errorMessage) => {
-        alert('Erreur : ' + errorMessage);
+    this.notification.confirm('Quitter cette organisation ?').subscribe(confirmed => {
+      if (confirmed) {
+        this.organizationService.leaveOrganization().subscribe({
+          next: (response) => {
+            this.notification.showSuccess(response.message);
+            this.router.navigate(['/accueil']);
+          },
+          error: (errorMessage) => {
+            this.notification.showError('Erreur : ' + errorMessage);
+          }
+        });
       }
     });
   }
