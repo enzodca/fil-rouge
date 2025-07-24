@@ -21,7 +21,6 @@
         </p>
       </div>
 
-      <!-- Timer Section -->
       <div *ngIf="hasTimer" class="timer-container">
         <mat-card class="timer-card">
           <mat-card-content>
@@ -135,7 +134,7 @@
 
                 <div class="audio-progress" *ngIf="duration > 0">
                   <div class="progress-info">
-                    <span class="current-time">{{ formatAudioTime(currentTime) }}</span>
+                    <span class="current-time">{{ formatAudioTime(currentTime) }}/</span>
                     <span class="duration">{{ formatAudioTime(duration) }}</span>
                   </div>
                   <mat-progress-bar mode="determinate" [value]="progressPercentage" class="audio-progress-bar">

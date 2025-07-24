@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
-const { createQuiz, getAllQuizzes, deleteQuiz, updateQuiz, createQuizWithAudio } = require('../controllers/quizController');
+const { createQuiz, getAllQuizzes, deleteQuiz, updateQuiz } = require('../controllers/quizController');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Answer = require('../models/Answer');
 
 router.post('/create', auth, createQuiz);
-router.post('/create-with-audio', auth, createQuizWithAudio);
 router.get('/all', auth, getAllQuizzes);
 router.delete('/:id', auth, deleteQuiz);
 router.put('/:id', auth, updateQuiz);
@@ -36,7 +35,14 @@ router.get('/:id', auth, async (req, res) => {
     const full = [];
     for (const q of questions) {
       const answers = await Answer.find({ question_id: q._id });
-      full.push({ ...q.toObject(), answers });
+      const questionData = { ...q.toObject(), answers };
+
+      if (questionData.audio_data && questionData.audio_mimetype) {
+        questionData.audio_url = `data:${questionData.audio_mimetype};base64,${questionData.audio_data}`;
+        delete questionData.audio_data;
+      }
+      
+      full.push(questionData);
     }
 
     res.json({ ...quiz.toObject(), questions: full });

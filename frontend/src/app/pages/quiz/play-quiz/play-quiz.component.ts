@@ -208,6 +208,9 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getAudioUrl(question: any): string {
     if (question && question.audio_url) {
+      if (question.audio_url.startsWith('data:')) {
+        return question.audio_url;
+      }
       return `${environment.apiUrl.replace('/api', '')}${question.audio_url}`;
     }
     return '';

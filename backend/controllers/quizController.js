@@ -1,37 +1,6 @@
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Answer = require('../models/Answer');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads/audio');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'audio-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const audioUpload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024
-  },
-  fileFilter: function (req, file, cb) {
-    if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Seuls les fichiers audio sont autorisés'), false);
-    }
-  }
-});
 
 exports.createQuiz = async (req, res) => {
   const { title, description, questions, visibility, allowed_emails, has_timer } = req.body;
@@ -60,7 +29,10 @@ exports.createQuiz = async (req, res) => {
         content: q.content,
         type: q.type,
         quiz_id: quiz._id,
-        time_limit: q.time_limit || 30
+        time_limit: q.time_limit || 30,
+        audio_file_name: q.audio_file_name || null,
+        audio_data: q.audio_data || null,
+        audio_mimetype: q.audio_mimetype || null
       });
 
       for (const a of q.answers) {
@@ -79,82 +51,6 @@ exports.createQuiz = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la création', error: err.message });
   }
 };
-
-exports.createQuizWithAudio = [
-  audioUpload.fields([
-    { name: 'audio_0', maxCount: 1 },
-    { name: 'audio_1', maxCount: 1 },
-    { name: 'audio_2', maxCount: 1 },
-    { name: 'audio_3', maxCount: 1 },
-    { name: 'audio_4', maxCount: 1 },
-    { name: 'audio_5', maxCount: 1 },
-    { name: 'audio_6', maxCount: 1 },
-    { name: 'audio_7', maxCount: 1 },
-    { name: 'audio_8', maxCount: 1 },
-    { name: 'audio_9', maxCount: 1 }
-  ]),
-  async (req, res) => {
-    try {
-      const quizData = JSON.parse(req.body.quizData);
-      const { title, description, questions, visibility, allowed_emails, has_timer } = quizData;
-      const creator_id = req.user.id;
-      const organization_id = (visibility === 'organization') ? req.user.organization_id : undefined;
-
-      let total_time = 0;
-      if (has_timer && questions) {
-        total_time = questions.reduce((sum, q) => sum + (q.time_limit || 30), 0);
-      }
-
-      const quiz = await Quiz.create({
-        title,
-        description,
-        creator_id,
-        visibility,
-        organization_id,
-        allowed_emails: Array.isArray(allowed_emails) ? allowed_emails : [],
-        has_timer: has_timer || false,
-        total_time
-      });
-
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        
-        let audioFileName = null;
-        let audioUrl = null;
-        
-        if (q.type === 'blind_test' && req.files[`audio_${i}`]) {
-          const audioFile = req.files[`audio_${i}`][0];
-          audioFileName = audioFile.filename;
-          audioUrl = `/uploads/audio/${audioFile.filename}`;
-        }
-
-        const question = await Question.create({
-          content: q.content,
-          type: q.type,
-          quiz_id: quiz._id,
-          time_limit: q.time_limit || 30,
-          audio_file_name: audioFileName,
-          audio_url: audioUrl
-        });
-
-        for (const a of q.answers) {
-          await Answer.create({
-            content: a.content,
-            is_correct: a.is_correct,
-            question_id: question._id,
-            correct_order: a.correct_order || 0,
-            association_target: a.association_target || null
-          });
-        }
-      }
-
-      res.status(201).json({ message: 'Quiz créé avec succès', quizId: quiz._id });
-    } catch (err) {
-      console.error('Erreur création quiz avec audio:', err);
-      res.status(500).json({ message: 'Erreur lors de la création', error: err.message });
-    }
-  }
-];
 
 exports.getAllQuizzes = async (req, res) => {
   try {
@@ -255,7 +151,10 @@ exports.updateQuiz = async (req, res) => {
           { 
             content: q.content, 
             type: q.type,
-            time_limit: q.time_limit || 30
+            time_limit: q.time_limit || 30,
+            audio_file_name: q.audio_file_name || null,
+            audio_data: q.audio_data || null,
+            audio_mimetype: q.audio_mimetype || null
           },
           { new: true }
         );
@@ -276,7 +175,10 @@ exports.updateQuiz = async (req, res) => {
           content: q.content,
           type: q.type,
           quiz_id: quizId,
-          time_limit: q.time_limit || 30
+          time_limit: q.time_limit || 30,
+          audio_file_name: q.audio_file_name || null,
+          audio_data: q.audio_data || null,
+          audio_mimetype: q.audio_mimetype || null
         });
 
         for (const a of q.answers) {

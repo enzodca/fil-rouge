@@ -110,3 +110,87 @@
     color: #f44336 !important;
   }
 }
+
+.blind-test-interface {
+  .audio-upload-section {
+    margin-bottom: 2em;
+    
+    h5 {
+      margin: 0 0 1em 0;
+      color: #1976d2;
+      font-weight: 500;
+    }
+    
+    .audio-upload-area {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      margin-bottom: 1em;
+      
+      .audio-input {
+        display: none;
+      }
+      
+      .audio-upload-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        padding: 0.75em 1.5em;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #fafafa;
+        min-width: 200px;
+        
+        &:hover {
+          border-color: #1976d2;
+          background-color: #f0f7ff;
+        }
+        
+        mat-icon {
+          color: #1976d2;
+        }
+        
+        span {
+          font-size: 0.9em;
+          color: #666;
+        }
+      }
+      
+      .remove-audio-btn {
+        margin-left: auto;
+      }
+    }
+    
+    .audio-preview {
+      margin-top: 1em;
+      
+      audio {
+        width: 100%;
+        max-width: 400px;
+        height: 40px;
+      }
+    }
+  }
+  
+  .blind-test-answers {
+    h5 {
+      margin: 0 0 1em 0;
+      color: #1976d2;
+      font-weight: 500;
+    }
+  }
+  
+  .blind-test-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 1em;
+    color: #ff9800;
+    font-size: 0.9em;
+    padding: 0.5em;
+    background-color: #fff3e0;
+    border-radius: 4px;
+  }
+}

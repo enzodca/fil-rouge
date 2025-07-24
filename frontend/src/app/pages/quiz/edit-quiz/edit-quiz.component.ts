@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -13,10 +13,11 @@ import { SharedModule } from '../../../shared/shared.module';
   templateUrl: './edit-quiz.component.html',
   styleUrls: ['./edit-quiz.component.scss'],
 })
-export class EditQuizComponent implements OnInit {
+export class EditQuizComponent implements OnInit, OnDestroy {
   quizId = '';
   form: FormGroup;
   errorMessage = '';
+  audioFiles = new Map<number, { file: File; url: string; name: string }>();
 
   get hasTimer(): boolean {
     return this.form.get('has_timer')?.value || false;
@@ -182,13 +183,92 @@ export class EditQuizComponent implements OnInit {
               })
             ])
       ),
-      _id: q?._id || null
+      _id: q?._id || null,
+      audio_file_name: q?.audio_file_name || null,
+      audio_url: q?.audio_url || null,
+      audio_data: q?.audio_data || null,
+      audio_mimetype: q?.audio_mimetype || null
     });
     this.questions.push(question);
   }
 
+  onAudioFileSelected(event: any, questionIndex: number): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('audio/')) {
+        this.notification.showError('Veuillez sélectionner un fichier audio valide.');
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        this.notification.showError('Le fichier audio ne doit pas dépasser 10MB.');
+        return;
+      }
+      
+      const url = URL.createObjectURL(file);
+      
+      this.audioFiles.set(questionIndex, {
+        file: file,
+        url: url,
+        name: file.name
+      });
+      
+      this.questions.at(questionIndex).patchValue({
+        audio_file_name: file.name
+      });
+    }
+  }
+
+  removeAudioFile(questionIndex: number): void {
+    const audioData = this.audioFiles.get(questionIndex);
+    if (audioData) {
+      URL.revokeObjectURL(audioData.url);
+      this.audioFiles.delete(questionIndex);
+    }
+    
+    this.questions.at(questionIndex).patchValue({
+      audio_file_name: null,
+      audio_url: null,
+      audio_data: null,
+      audio_mimetype: null
+    });
+  }
+
+  getAudioFileName(questionIndex: number): string {
+    const audioData = this.audioFiles.get(questionIndex);
+    if (audioData) {
+      return audioData.name;
+    }
+    const question = this.questions.at(questionIndex);
+    return question.get('audio_file_name')?.value || '';
+  }
+
+  getAudioUrl(questionIndex: number): string {
+    const audioData = this.audioFiles.get(questionIndex);
+    if (audioData) {
+      return audioData.url;
+    }
+    const question = this.questions.at(questionIndex);
+    return question.get('audio_url')?.value || '';
+  }
+
+  hasAudioFile(questionIndex: number): boolean {
+    return this.getAudioFileName(questionIndex) !== '';
+  }
+
   removeQuestion(index: number) {
+    this.removeAudioFile(index);
     this.questions.removeAt(index);
+
+    const newAudioFiles = new Map<number, { file: File; url: string; name: string }>();
+    this.audioFiles.forEach((value, key) => {
+      if (key > index) {
+        newAudioFiles.set(key - 1, value);
+      } else if (key < index) {
+        newAudioFiles.set(key, value);
+      }
+    });
+    this.audioFiles = newAudioFiles;
   }
 
   addAnswer(qIndex: number) {
@@ -213,7 +293,7 @@ export class EditQuizComponent implements OnInit {
     this.allowedEmails.push(this.fb.control(''));
   }
 
-  submit() {
+  async submit() {
     this.errorMessage = '';
     
     if (this.hasAnyDuplicates()) {
@@ -229,12 +309,46 @@ export class EditQuizComponent implements OnInit {
       return;
     }
 
-    this.http.put(`${environment.apiUrl}/quiz/${this.quizId}`, this.form.value).subscribe({
-      next: () => {
-        this.notification.showSuccess('Quiz mis à jour !');
-        this.router.navigate(['/quiz-list']);
-      },
-      error: err => this.errorMessage = 'Erreur : ' + (err.error?.message || 'Erreur inconnue')
+    try {
+      const quizData = { ...this.form.value };
+
+      for (let questionIndex = 0; questionIndex < quizData.questions.length; questionIndex++) {
+        const audioData = this.audioFiles.get(questionIndex);
+        if (audioData && quizData.questions[questionIndex].type === 'blind_test') {
+          const base64 = await this.fileToBase64(audioData.file);
+          quizData.questions[questionIndex].audio_data = base64;
+          quizData.questions[questionIndex].audio_mimetype = audioData.file.type;
+          quizData.questions[questionIndex].audio_file_name = audioData.file.name;
+        }
+      }
+
+      this.http.put(`${environment.apiUrl}/quiz/${this.quizId}`, quizData).subscribe({
+        next: () => {
+          this.audioFiles.forEach((audioData) => {
+            URL.revokeObjectURL(audioData.url);
+          });
+          this.audioFiles.clear();
+          
+          this.notification.showSuccess('Quiz mis à jour !');
+          this.router.navigate(['/quiz-list']);
+        },
+        error: err => this.errorMessage = 'Erreur : ' + (err.error?.message || 'Erreur inconnue')
+      });
+    } catch (error) {
+      this.errorMessage = 'Erreur lors du traitement des fichiers audio';
+    }
+  }
+
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
     });
   }
 
@@ -279,6 +393,14 @@ export class EditQuizComponent implements OnInit {
         if (uniqueRightContents.length !== q.answers.length) {
           return 'Les éléments de droite ne peuvent pas être identiques dans une question d\'association.';
         }
+      } else if (q.type === 'blind_test') {
+        if (!this.hasAudioFile(i)) {
+          return 'Chaque question de blind test doit avoir un fichier audio.';
+        }
+
+        if (!q.answers.some((a: any) => a.is_correct)) {
+          return 'Chaque question de blind test doit avoir au moins une réponse correcte.';
+        }
       } else {
         if (!q.answers.some((a: any) => a.is_correct)) {
           return 'Chaque question doit avoir au moins une réponse correcte.';
@@ -297,5 +419,12 @@ export class EditQuizComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  ngOnDestroy(): void {
+    this.audioFiles.forEach((audioData) => {
+      URL.revokeObjectURL(audioData.url);
+    });
+    this.audioFiles.clear();
   }
 }

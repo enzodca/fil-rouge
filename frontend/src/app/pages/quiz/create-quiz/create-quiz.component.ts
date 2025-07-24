@@ -280,7 +280,7 @@ export class CreateQuizComponent implements OnInit, OnDestroy {
     this.allowedEmails.push(this.fb.control(''));
   }
 
-  submit() {
+  async submit() {
     this.errorMessage = '';
     
     if (this.hasAnyDuplicates()) {
@@ -296,19 +296,20 @@ export class CreateQuizComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const hasAudioFiles = this.audioFiles.size > 0;
-
-    if (hasAudioFiles) {
-      const formData = new FormData();
+    try {
       const quizData = { ...this.form.value };
 
-      this.audioFiles.forEach((audioData, questionIndex) => {
-        formData.append(`audio_${questionIndex}`, audioData.file);
-      });
+      for (let questionIndex = 0; questionIndex < quizData.questions.length; questionIndex++) {
+        const audioData = this.audioFiles.get(questionIndex);
+        if (audioData && quizData.questions[questionIndex].type === 'blind_test') {
+          const base64 = await this.fileToBase64(audioData.file);
+          quizData.questions[questionIndex].audio_data = base64;
+          quizData.questions[questionIndex].audio_mimetype = audioData.file.type;
+          quizData.questions[questionIndex].audio_file_name = audioData.file.name;
+        }
+      }
 
-      formData.append('quizData', JSON.stringify(quizData));
-
-      this.quizService.createQuizWithAudio(formData).subscribe({
+      this.quizService.createQuiz(quizData).subscribe({
         next: () => {
           this.audioFiles.forEach((audioData) => {
             URL.revokeObjectURL(audioData.url);
@@ -322,17 +323,22 @@ export class CreateQuizComponent implements OnInit, OnDestroy {
           (this.errorMessage =
             'Erreur : ' + (err.error?.message || 'Erreur inconnue')),
       });
-    } else {
-      this.quizService.createQuiz(this.form.value).subscribe({
-        next: () => {
-          this.notification.showSuccess('Quiz créé !');
-          this.router.navigate(['/accueil']);
-        },
-        error: (err: any) =>
-          (this.errorMessage =
-            'Erreur : ' + (err.error?.message || 'Erreur inconnue')),
-      });
+    } catch (error) {
+      this.errorMessage = 'Erreur lors du traitement des fichiers audio';
     }
+  }
+
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
   }
 
   validateQuiz(): string | null {

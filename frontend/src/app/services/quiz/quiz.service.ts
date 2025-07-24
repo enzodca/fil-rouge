@@ -26,6 +26,8 @@ export interface Question {
   time_limit?: number;
   audio_file_name?: string;
   audio_url?: string;
+  audio_data?: string;
+  audio_mimetype?: string;
 }
 
 export interface Answer {
@@ -46,11 +48,6 @@ export class QuizService {
   createQuiz(quiz: Partial<Quiz>): Observable<{ message: string; quizId: string }> {
     return this.http.post<{ message: string; quizId: string }>(`${this.API_URL}/create`, quiz);
   }
-
-  createQuizWithAudio(formData: FormData): Observable<{ message: string; quizId: string }> {
-    return this.http.post<{ message: string; quizId: string }>(`${this.API_URL}/create-with-audio`, formData);
-  }
-
 
   getAllQuizzes(): Observable<Quiz[]> {
     return this.http.get<Quiz[]>(`${this.API_URL}/all`);
