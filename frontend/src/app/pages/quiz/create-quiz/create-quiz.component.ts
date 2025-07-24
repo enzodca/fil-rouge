@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -13,11 +13,12 @@ import { SharedModule } from '../../../shared/shared.module';
   templateUrl: './create-quiz.component.html',
   styleUrls: ['./create-quiz.component.scss'],
 })
-export class CreateQuizComponent implements OnInit {
+export class CreateQuizComponent implements OnInit, OnDestroy {
   form: FormGroup;
   errorMessage = '';
   hasOrganization = false;
   organizationName: string | null = null;
+  audioFiles: Map<number, { file: File; url: string; name: string }> = new Map();
 
   get hasTimer(): boolean {
     return this.form.get('has_timer')?.value || false;
@@ -108,7 +109,55 @@ export class CreateQuizComponent implements OnInit {
     return this.questions.at(questionIndex).get('type')?.value || 'QCM';
   }
 
-  // Méthodes pour vérifier les doublons en temps réel
+  onAudioFileSelected(event: any, questionIndex: number): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('audio/')) {
+        this.notification.showError('Veuillez sélectionner un fichier audio valide.');
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        this.notification.showError('Le fichier audio ne doit pas dépasser 10MB.');
+        return;
+      }
+      
+      const url = URL.createObjectURL(file);
+      
+      this.audioFiles.set(questionIndex, {
+        file: file,
+        url: url,
+        name: file.name
+      });
+      
+      this.questions.at(questionIndex).patchValue({
+        audio_file_name: file.name
+      });
+    }
+  }
+
+  removeAudioFile(questionIndex: number): void {
+    const audioData = this.audioFiles.get(questionIndex);
+    if (audioData) {
+      URL.revokeObjectURL(audioData.url);
+      this.audioFiles.delete(questionIndex);
+      
+      this.questions.at(questionIndex).patchValue({
+        audio_file_name: null
+      });
+    }
+  }
+
+  getAudioFileName(questionIndex: number): string {
+    const audioData = this.audioFiles.get(questionIndex);
+    return audioData ? audioData.name : '';
+  }
+
+  getAudioUrl(questionIndex: number): string {
+    const audioData = this.audioFiles.get(questionIndex);
+    return audioData ? audioData.url : '';
+  }
+
   hasLeftDuplicate(questionIndex: number, answerIndex: number): boolean {
     const answers = this.getAnswers(questionIndex);
     const currentValue = answers.at(answerIndex).get('content')?.value?.trim().toLowerCase();
@@ -162,11 +211,19 @@ export class CreateQuizComponent implements OnInit {
     return false;
   }
 
+  ngOnDestroy(): void {
+    this.audioFiles.forEach((audioData) => {
+      URL.revokeObjectURL(audioData.url);
+    });
+    this.audioFiles.clear();
+  }
+
   addQuestion() {
     const question = this.fb.group({
       content: ['', Validators.required],
       type: 'QCM',
       time_limit: [30, [Validators.required, Validators.min(5), Validators.max(300)]],
+      audio_file_name: [null],
       answers: this.fb.array([
         this.fb.group({
           content: ['', Validators.required],
@@ -186,7 +243,19 @@ export class CreateQuizComponent implements OnInit {
   }
 
   removeQuestion(index: number) {
+    this.removeAudioFile(index);
+    
     this.questions.removeAt(index);
+    
+    const newAudioFiles = new Map<number, { file: File; url: string; name: string }>();
+    this.audioFiles.forEach((value, key) => {
+      if (key > index) {
+        newAudioFiles.set(key - 1, value);
+      } else if (key < index) {
+        newAudioFiles.set(key, value);
+      }
+    });
+    this.audioFiles = newAudioFiles;
   }
 
   addAnswer(qIndex: number) {
@@ -214,7 +283,6 @@ export class CreateQuizComponent implements OnInit {
   submit() {
     this.errorMessage = '';
     
-    // Vérifier les doublons avant la validation
     if (this.hasAnyDuplicates()) {
       this.errorMessage = 'Veuillez corriger les doublons dans les questions d\'association avant de continuer.';
       return;
@@ -228,15 +296,43 @@ export class CreateQuizComponent implements OnInit {
       return;
     }
 
-    this.quizService.createQuiz(this.form.value).subscribe({
-      next: () => {
-        this.notification.showSuccess('Quiz créé !');
-        this.router.navigate(['/accueil']);
-      },
-      error: (err) =>
-        (this.errorMessage =
-          'Erreur : ' + (err.error?.message || 'Erreur inconnue')),
-    });
+    const hasAudioFiles = this.audioFiles.size > 0;
+
+    if (hasAudioFiles) {
+      const formData = new FormData();
+      const quizData = { ...this.form.value };
+
+      this.audioFiles.forEach((audioData, questionIndex) => {
+        formData.append(`audio_${questionIndex}`, audioData.file);
+      });
+
+      formData.append('quizData', JSON.stringify(quizData));
+
+      this.quizService.createQuizWithAudio(formData).subscribe({
+        next: () => {
+          this.audioFiles.forEach((audioData) => {
+            URL.revokeObjectURL(audioData.url);
+          });
+          this.audioFiles.clear();
+          
+          this.notification.showSuccess('Quiz créé !');
+          this.router.navigate(['/accueil']);
+        },
+        error: (err: any) =>
+          (this.errorMessage =
+            'Erreur : ' + (err.error?.message || 'Erreur inconnue')),
+      });
+    } else {
+      this.quizService.createQuiz(this.form.value).subscribe({
+        next: () => {
+          this.notification.showSuccess('Quiz créé !');
+          this.router.navigate(['/accueil']);
+        },
+        error: (err: any) =>
+          (this.errorMessage =
+            'Erreur : ' + (err.error?.message || 'Erreur inconnue')),
+      });
+    }
   }
 
   validateQuiz(): string | null {
@@ -255,7 +351,6 @@ export class CreateQuizComponent implements OnInit {
         return 'Chaque question doit avoir au moins deux réponses.';
 
       if (q.type === 'ordre') {
-        // Validation spécifique pour les questions d'ordre
         const orders = q.answers.map((a: any) => a.correct_order);
         const uniqueOrders = [...new Set(orders)];
         if (uniqueOrders.length !== q.answers.length) {
@@ -267,28 +362,32 @@ export class CreateQuizComponent implements OnInit {
           }
         }
       } else if (q.type === 'association') {
-        // Validation spécifique pour les questions d'association
         for (let j = 0; j < q.answers.length; j++) {
           if (!q.answers[j].association_target || !q.answers[j].association_target.trim()) {
             return 'Chaque élément d\'association doit avoir un élément associé.';
           }
         }
-        
-        // Vérifier les doublons dans les éléments de gauche
+
         const leftContents = q.answers.map((a: any) => a.content.trim().toLowerCase());
         const uniqueLeftContents = [...new Set(leftContents)];
         if (uniqueLeftContents.length !== q.answers.length) {
           return 'Les éléments de gauche ne peuvent pas être identiques dans une question d\'association.';
         }
-        
-        // Vérifier les doublons dans les éléments de droite
+
         const rightContents = q.answers.map((a: any) => a.association_target.trim().toLowerCase());
         const uniqueRightContents = [...new Set(rightContents)];
         if (uniqueRightContents.length !== q.answers.length) {
           return 'Les éléments de droite ne peuvent pas être identiques dans une question d\'association.';
         }
+      } else if (q.type === 'blind_test') {
+        if (!this.audioFiles.has(i)) {
+          return 'Chaque question de blind test doit avoir un fichier audio.';
+        }
+
+        if (!q.answers.some((a: any) => a.is_correct)) {
+          return 'Chaque question de blind test doit avoir au moins une réponse correcte.';
+        }
       } else {
-        // Validation pour QCM et autres types
         if (!q.answers.some((a: any) => a.is_correct))
           return 'Chaque question doit avoir au moins une réponse correcte.';
       }

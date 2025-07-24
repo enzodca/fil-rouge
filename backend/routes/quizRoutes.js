@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
-const { createQuiz, getAllQuizzes, deleteQuiz, updateQuiz } = require('../controllers/quizController');
+const { createQuiz, getAllQuizzes, deleteQuiz, updateQuiz, createQuizWithAudio } = require('../controllers/quizController');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Answer = require('../models/Answer');
 
 router.post('/create', auth, createQuiz);
+router.post('/create-with-audio', auth, createQuizWithAudio);
 router.get('/all', auth, getAllQuizzes);
 router.delete('/:id', auth, deleteQuiz);
 router.put('/:id', auth, updateQuiz);

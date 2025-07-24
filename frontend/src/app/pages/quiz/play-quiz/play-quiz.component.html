@@ -1,7 +1,7 @@
 <mat-card>
   <mat-card-title class="center-title">Jouer au quiz</mat-card-title>
   <mat-card-content>
-    <div *ngIf="showResults" style="text-align: center;">
+    <div *ngIf="showResults" class="results-container">
       <h3>Quiz terminé !</h3>
       <h2>Score : {{ score }} / {{ questions.length }}</h2>
       <p>{{ (score! / questions.length * 100) | number:'1.0-0' }}% de réussite</p>
@@ -100,8 +100,61 @@
             </div>
           </div>
 
+          <div *ngIf="currentQuestion.type === 'blind_test'" class="blind-test-container">
+            <div class="blind-test-instructions">
+              <mat-icon>audiotrack</mat-icon>
+              <span>Écoutez l'extrait audio et choisissez la bonne réponse</span>
+            </div>
+
+            <div class="audio-player-section">
+              <audio #audioPlayer [src]="getAudioUrl(currentQuestion)" class="audio-player-hidden"
+                [controlsList]="'nodownload nofullscreen noremoteplayback'" oncontextmenu="return false;"
+                disablePictureInPicture="true">
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+
+              <div class="custom-audio-controls">
+                <div class="main-controls">
+                  <button mat-fab color="primary" class="control-button play-pause-btn" (click)="togglePlayPause()"
+                    [attr.aria-label]="isPlaying ? 'Pause' : 'Play'">
+                    <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+                  </button>
+
+                  <button mat-icon-button color="accent" class="control-button restart-btn" (click)="restartAudio()"
+                    aria-label="Recommencer">
+                    <mat-icon>replay</mat-icon>
+                  </button>
+                </div>
+
+                <div class="volume-control">
+                  <mat-icon class="volume-icon">volume_up</mat-icon>
+                  <input type="range" class="volume-slider" min="0" max="100" [value]="volume"
+                    (input)="onVolumeChange($event)" aria-label="Volume">
+                  <span class="volume-text">{{ volume }}%</span>
+                </div>
+
+                <div class="audio-progress" *ngIf="duration > 0">
+                  <div class="progress-info">
+                    <span class="current-time">{{ formatAudioTime(currentTime) }}</span>
+                    <span class="duration">{{ formatAudioTime(duration) }}</span>
+                  </div>
+                  <mat-progress-bar mode="determinate" [value]="progressPercentage" class="audio-progress-bar">
+                  </mat-progress-bar>
+                </div>
+              </div>
+            </div>
+
+            <div class="blind-test-answers">
+              <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
+                [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
+                class="answer-button blind-test-answer" (click)="selectAnswer(currentQuestion._id, answer.content)">
+                {{ answer.content }}
+              </button>
+            </div>
+          </div>
+
           <div
-            *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre' && currentQuestion.type !== 'association'"
+            *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre' && currentQuestion.type !== 'association' && currentQuestion.type !== 'blind_test'"
             class="answers-container">
             <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
               [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"

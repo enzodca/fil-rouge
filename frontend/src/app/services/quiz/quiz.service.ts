@@ -20,10 +20,12 @@ export interface Quiz {
 export interface Question {
   _id?: string;
   content: string;
-  type: 'QCM' | 'ordre' | 'intrus';
+  type: 'QCM' | 'ordre' | 'intrus' | 'association' | 'blind_test';
   quiz_id?: string;
   answers: Answer[];
   time_limit?: number;
+  audio_file_name?: string;
+  audio_url?: string;
 }
 
 export interface Answer {
@@ -31,6 +33,8 @@ export interface Answer {
   content: string;
   is_correct: boolean;
   question_id?: string;
+  correct_order?: number;
+  association_target?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -41,6 +45,10 @@ export class QuizService {
 
   createQuiz(quiz: Partial<Quiz>): Observable<{ message: string; quizId: string }> {
     return this.http.post<{ message: string; quizId: string }>(`${this.API_URL}/create`, quiz);
+  }
+
+  createQuizWithAudio(formData: FormData): Observable<{ message: string; quizId: string }> {
+    return this.http.post<{ message: string; quizId: string }>(`${this.API_URL}/create-with-audio`, formData);
   }
 
 

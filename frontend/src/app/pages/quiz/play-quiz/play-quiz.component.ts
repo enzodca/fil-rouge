@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
@@ -13,7 +13,9 @@ import { NotificationService } from '../../../services/notification/notification
   templateUrl: './play-quiz.component.html',
   styleUrls: ['./play-quiz.component.scss']
 })
-export class PlayQuizComponent implements OnInit, OnDestroy {
+export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('audioPlayer') audioPlayer!: ElementRef<HTMLAudioElement>;
+
   quizId = '';
   quiz: any = null;
   questions: any[] = [];
@@ -21,21 +23,24 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
   score: number | null = null;
   currentQuestionIndex = 0;
   showResults = false;
-  
+
   timeRemaining = 0;
   timerInterval: any;
   hasTimer = false;
   totalTime = 0;
 
-  // Pour les questions de type "ordre"
+  isPlaying = false;
+  volume = 70;
+  currentTime = 0;
+  duration = 0;
+  audioInterval: any;
+
   orderAnswers: any[] = [];
 
-  // Pour les questions de type "association"
-  associationPairs: {left: any, right: any, matched: boolean}[] = [];
+  associationPairs: { left: any, right: any, matched: boolean }[] = [];
   selectedLeftItem: any = null;
   shuffledRightItems: string[] = [];
-  
-  // Pour accéder aux fonctions globales dans le template
+
   Object = Object;
 
   constructor(
@@ -55,13 +60,13 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
         this.quiz = data;
         this.questions = data.questions;
         this.hasTimer = data.has_timer || false;
-        
+
         if (this.hasTimer) {
           this.timeRemaining = this.questions[0]?.time_limit || 30;
           this.totalTime = data.total_time || 0;
           this.startTimer();
         }
-        
+
         for (let q of this.questions) {
           if (q.type === 'QCM') {
             const answersFormArray = this.fb.array(
@@ -69,14 +74,16 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
             );
             this.form.addControl(q._id, answersFormArray);
           } else if (q.type === 'ordre') {
-            // Pour les questions d'ordre, on mélange les réponses
             this.form.addControl(q._id, this.fb.control([]));
+          } else if (q.type === 'association') {
+            this.form.addControl(q._id, this.fb.control({}));
+          } else if (q.type === 'blind_test') {
+            this.form.addControl(q._id, this.fb.control(null));
           } else {
             this.form.addControl(q._id, this.fb.control(null));
           }
         }
-        
-        // Initialiser les réponses mélangées pour la première question si c'est du type "ordre"
+
         this.initializeOrderAnswers();
         this.initializeAssociationAnswers();
       },
@@ -85,6 +92,12 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
         this.router.navigate(['/quiz-list']);
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initializeAudio();
+    }, 100);
   }
 
   get currentQuestion() {
@@ -101,7 +114,6 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
 
   initializeOrderAnswers() {
     if (this.currentQuestion && this.currentQuestion.type === 'ordre') {
-      // Créer une copie mélangée des réponses
       this.orderAnswers = [...this.currentQuestion.answers].sort(() => Math.random() - 0.5);
       this.form.get(this.currentQuestion._id)?.setValue([...this.orderAnswers]);
     }
@@ -109,14 +121,11 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
 
   initializeAssociationAnswers() {
     if (this.currentQuestion && this.currentQuestion.type === 'association') {
-      // Créer une liste mélangée des éléments de droite
       this.shuffledRightItems = [...this.currentQuestion.answers.map((a: any) => a.association_target)]
         .sort(() => Math.random() - 0.5);
-      
-      // Réinitialiser la sélection
+
       this.selectedLeftItem = null;
-      
-      // Initialiser le formulaire avec un objet vide pour les associations
+
       this.form.get(this.currentQuestion._id)?.setValue({});
     }
   }
@@ -140,18 +149,17 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     this.form.get(questionId)?.setValue(answerContent);
   }
 
-  // Méthodes pour les questions d'association
   selectLeftItem(item: any) {
     this.selectedLeftItem = item;
   }
 
   associateWithRight(rightItem: string) {
     if (!this.selectedLeftItem) return;
-    
+
     const currentValue = this.form.get(this.currentQuestion._id)?.value || {};
     currentValue[this.selectedLeftItem.content] = rightItem;
     this.form.get(this.currentQuestion._id)?.setValue(currentValue);
-    
+
     this.selectedLeftItem = null;
   }
 
@@ -191,9 +199,90 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     } else if (this.currentQuestion.type === 'association') {
       const associations = this.form.get(this.currentQuestion._id)?.value || {};
       return Object.keys(associations).length === this.currentQuestion.answers.length;
+    } else if (this.currentQuestion.type === 'blind_test') {
+      return this.form.get(this.currentQuestion._id)?.value !== null;
     } else {
       return this.form.get(this.currentQuestion._id)?.value !== null;
     }
+  }
+
+  getAudioUrl(question: any): string {
+    if (question && question.audio_url) {
+      return `${environment.apiUrl.replace('/api', '')}${question.audio_url}`;
+    }
+    return '';
+  }
+
+  playAudio(): void {
+    if (this.audioPlayer?.nativeElement) {
+      this.audioPlayer.nativeElement.play();
+    }
+  }
+
+  pauseAudio(): void {
+    if (this.audioPlayer?.nativeElement) {
+      this.audioPlayer.nativeElement.pause();
+    }
+  }
+
+  restartAudio(): void {
+    if (this.audioPlayer?.nativeElement) {
+      this.audioPlayer.nativeElement.currentTime = 0;
+      this.audioPlayer.nativeElement.play();
+    }
+  }
+
+  togglePlayPause(): void {
+    if (!this.audioPlayer?.nativeElement) return;
+    
+    if (this.audioPlayer.nativeElement.paused) {
+      this.audioPlayer.nativeElement.play();
+      this.isPlaying = true;
+    } else {
+      this.audioPlayer.nativeElement.pause();
+      this.isPlaying = false;
+    }
+  }
+
+  onVolumeChange(event: any): void {
+    if (this.audioPlayer?.nativeElement) {
+      this.volume = event.target.value;
+      this.audioPlayer.nativeElement.volume = this.volume / 100;
+    }
+  }
+
+  formatAudioTime(time: number): string {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  initializeAudio(): void {
+    if (!this.audioPlayer?.nativeElement) return;
+    
+    const audio = this.audioPlayer.nativeElement;
+
+    audio.addEventListener('loadedmetadata', () => {
+      this.duration = audio.duration;
+    });
+    
+    audio.addEventListener('timeupdate', () => {
+      this.currentTime = audio.currentTime;
+    });
+    
+    audio.addEventListener('play', () => {
+      this.isPlaying = true;
+    });
+    
+    audio.addEventListener('pause', () => {
+      this.isPlaying = false;
+    });
+    
+    audio.addEventListener('ended', () => {
+      this.isPlaying = false;
+      this.currentTime = 0;
+    });
   }
 
   finishQuiz() {
@@ -208,36 +297,38 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
       if (question.type === 'QCM') {
         const selectedAnswers = this.form.value[question._id];
         const correctAnswers = question.answers.map((a: any) => a.is_correct);
-        
+
         const isCorrect = selectedAnswers.length === correctAnswers.length &&
-          selectedAnswers.every((selected: boolean, index: number) => 
+          selectedAnswers.every((selected: boolean, index: number) =>
             selected === correctAnswers[index]
           );
-        
+
         if (isCorrect) total++;
       } else if (question.type === 'ordre') {
         const userOrder = this.form.value[question._id];
         const correctOrder = [...question.answers].sort((a, b) => a.correct_order - b.correct_order);
-        
-        // Vérifier si l'ordre utilisateur correspond à l'ordre correct
+
         const isCorrect = userOrder.length === correctOrder.length &&
-          userOrder.every((answer: any, index: number) => 
+          userOrder.every((answer: any, index: number) =>
             answer._id === correctOrder[index]._id
           );
-        
+
         if (isCorrect) total++;
       } else if (question.type === 'association') {
         const userAssociations = this.form.value[question._id] || {};
         let correctAssociations = 0;
-        
+
         for (const answer of question.answers) {
           if (userAssociations[answer.content] === answer.association_target) {
             correctAssociations++;
           }
         }
-        
-        // Question correcte si toutes les associations sont bonnes
+
         if (correctAssociations === question.answers.length) total++;
+      } else if (question.type === 'blind_test') {
+        const selected = this.form.value[question._id];
+        const correct = question.answers.find((a: any) => a.is_correct)?.content;
+        if (selected === correct) total++;
       } else {
         const selected = this.form.value[question._id];
         const correct = question.answers.find((a: any) => a.is_correct)?.content;
@@ -253,7 +344,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
 
   startTimer() {
     if (!this.hasTimer) return;
-    
+
     this.timerInterval = setInterval(() => {
       this.timeRemaining--;
       if (this.timeRemaining <= 0) {
@@ -279,13 +370,17 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
 
   validateCurrentAnswer() {
     this.stopTimer();
-    
+
+    if (this.currentQuestion.type === 'blind_test') {
+      this.pauseAudio();
+    }
+
     if (this.isLastQuestion) {
       this.finishQuiz();
     } else {
       this.currentQuestionIndex++;
-      this.initializeOrderAnswers(); // Réinitialiser pour la nouvelle question d'ordre
-      this.initializeAssociationAnswers(); // Réinitialiser pour la nouvelle question d'association
+      this.initializeOrderAnswers();
+      this.initializeAssociationAnswers();
       this.resetTimerForQuestion();
     }
   }
@@ -305,7 +400,18 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     return (this.timeRemaining / maxTime) * 100;
   }
 
+  get progressPercentage(): number {
+    if (this.duration === 0) return 0;
+    return (this.currentTime / this.duration) * 100;
+  }
+
   ngOnDestroy() {
     this.stopTimer();
+    if (this.audioPlayer?.nativeElement) {
+      this.audioPlayer.nativeElement.pause();
+    }
+    if (this.audioInterval) {
+      clearInterval(this.audioInterval);
+    }
   }
 }
