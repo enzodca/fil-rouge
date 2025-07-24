@@ -30,6 +30,14 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
   // Pour les questions de type "ordre"
   orderAnswers: any[] = [];
 
+  // Pour les questions de type "association"
+  associationPairs: {left: any, right: any, matched: boolean}[] = [];
+  selectedLeftItem: any = null;
+  shuffledRightItems: string[] = [];
+  
+  // Pour accéder aux fonctions globales dans le template
+  Object = Object;
+
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
@@ -70,6 +78,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
         
         // Initialiser les réponses mélangées pour la première question si c'est du type "ordre"
         this.initializeOrderAnswers();
+        this.initializeAssociationAnswers();
       },
       error: () => {
         this.notification.showError('Quiz introuvable');
@@ -98,6 +107,20 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     }
   }
 
+  initializeAssociationAnswers() {
+    if (this.currentQuestion && this.currentQuestion.type === 'association') {
+      // Créer une liste mélangée des éléments de droite
+      this.shuffledRightItems = [...this.currentQuestion.answers.map((a: any) => a.association_target)]
+        .sort(() => Math.random() - 0.5);
+      
+      // Réinitialiser la sélection
+      this.selectedLeftItem = null;
+      
+      // Initialiser le formulaire avec un objet vide pour les associations
+      this.form.get(this.currentQuestion._id)?.setValue({});
+    }
+  }
+
   onDrop(event: CdkDragDrop<any[]>) {
     moveItemInArray(this.orderAnswers, event.previousIndex, event.currentIndex);
     this.form.get(this.currentQuestion._id)?.setValue([...this.orderAnswers]);
@@ -117,6 +140,39 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     this.form.get(questionId)?.setValue(answerContent);
   }
 
+  // Méthodes pour les questions d'association
+  selectLeftItem(item: any) {
+    this.selectedLeftItem = item;
+  }
+
+  associateWithRight(rightItem: string) {
+    if (!this.selectedLeftItem) return;
+    
+    const currentValue = this.form.get(this.currentQuestion._id)?.value || {};
+    currentValue[this.selectedLeftItem.content] = rightItem;
+    this.form.get(this.currentQuestion._id)?.setValue(currentValue);
+    
+    this.selectedLeftItem = null;
+  }
+
+  isLeftItemSelected(item: any): boolean {
+    return this.selectedLeftItem === item;
+  }
+
+  getAssociationForLeft(leftContent: string): string | null {
+    const associations = this.form.get(this.currentQuestion._id)?.value || {};
+    return associations[leftContent] || null;
+  }
+
+  isRightItemUsed(rightItem: string): boolean {
+    const associations = this.form.get(this.currentQuestion._id)?.value || {};
+    return Object.values(associations).includes(rightItem);
+  }
+
+  getForm(questionId: string) {
+    return this.form.get(questionId);
+  }
+
   isAnswerSelected(answerIndex: number): boolean {
     if (this.currentQuestion.type === 'QCM') {
       const answersArray = this.getAnswersFormArray(this.currentQuestion._id);
@@ -132,6 +188,9 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
       return answersArray.value.some((selected: boolean) => selected);
     } else if (this.currentQuestion.type === 'ordre') {
       return this.orderAnswers.length > 0;
+    } else if (this.currentQuestion.type === 'association') {
+      const associations = this.form.get(this.currentQuestion._id)?.value || {};
+      return Object.keys(associations).length === this.currentQuestion.answers.length;
     } else {
       return this.form.get(this.currentQuestion._id)?.value !== null;
     }
@@ -167,6 +226,18 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
           );
         
         if (isCorrect) total++;
+      } else if (question.type === 'association') {
+        const userAssociations = this.form.value[question._id] || {};
+        let correctAssociations = 0;
+        
+        for (const answer of question.answers) {
+          if (userAssociations[answer.content] === answer.association_target) {
+            correctAssociations++;
+          }
+        }
+        
+        // Question correcte si toutes les associations sont bonnes
+        if (correctAssociations === question.answers.length) total++;
       } else {
         const selected = this.form.value[question._id];
         const correct = question.answers.find((a: any) => a.is_correct)?.content;
@@ -214,6 +285,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy {
     } else {
       this.currentQuestionIndex++;
       this.initializeOrderAnswers(); // Réinitialiser pour la nouvelle question d'ordre
+      this.initializeAssociationAnswers(); // Réinitialiser pour la nouvelle question d'association
       this.resetTimerForQuestion();
     }
   }

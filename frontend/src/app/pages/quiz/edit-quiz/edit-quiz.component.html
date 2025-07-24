@@ -66,6 +66,7 @@
                   <mat-option value="QCM">QCM</mat-option>
                   <mat-option value="ordre">Ordre</mat-option>
                   <mat-option value="intrus">Intrus</mat-option>
+                  <mat-option value="association">Association</mat-option>
                 </mat-select>
               </mat-form-field>
 
@@ -121,6 +122,46 @@
                             *ngIf="getAnswers(i).length > 2">
                       <mat-icon>delete</mat-icon>
                     </button>
+                  </div>
+                </div>
+
+                <!-- Interface pour les questions d'association -->
+                <div *ngIf="getQuestionType(i) === 'association'" class="association-interface">
+                  <div class="association-columns">
+                    <div class="column">
+                      <h5>Éléments de gauche</h5>
+                      <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                        <mat-form-field appearance="outline" class="full-width"
+                                        [class.duplicate-error]="hasLeftDuplicate(i, j)">
+                          <mat-label>Élément {{ j + 1 }}</mat-label>
+                          <input matInput type="text" formControlName="content" placeholder="Élément à associer" />
+                          <mat-error *ngIf="hasLeftDuplicate(i, j)">
+                            Cet élément existe déjà
+                          </mat-error>
+                        </mat-form-field>
+                        <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
+                                *ngIf="getAnswers(i).length > 2">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <h5>Éléments de droite (associations correctes)</h5>
+                      <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                        <mat-form-field appearance="outline" class="full-width"
+                                        [class.duplicate-error]="hasRightDuplicate(i, j)">
+                          <mat-label>Association {{ j + 1 }}</mat-label>
+                          <input matInput type="text" formControlName="association_target" placeholder="Élément associé" />
+                          <mat-error *ngIf="hasRightDuplicate(i, j)">
+                            Cet élément existe déjà
+                          </mat-error>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="association-info">
+                    <mat-icon>info</mat-icon>
+                    <span>Créez des paires d'éléments à associer. L'ordre des éléments de droite correspond à celui de gauche.</span>
                   </div>
                 </div>
 

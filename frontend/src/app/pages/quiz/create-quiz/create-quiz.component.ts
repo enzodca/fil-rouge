@@ -108,6 +108,60 @@ export class CreateQuizComponent implements OnInit {
     return this.questions.at(questionIndex).get('type')?.value || 'QCM';
   }
 
+  // Méthodes pour vérifier les doublons en temps réel
+  hasLeftDuplicate(questionIndex: number, answerIndex: number): boolean {
+    const answers = this.getAnswers(questionIndex);
+    const currentValue = answers.at(answerIndex).get('content')?.value?.trim().toLowerCase();
+    if (!currentValue) return false;
+    
+    for (let i = 0; i < answers.length; i++) {
+      if (i !== answerIndex) {
+        const otherValue = answers.at(i).get('content')?.value?.trim().toLowerCase();
+        if (otherValue === currentValue) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasRightDuplicate(questionIndex: number, answerIndex: number): boolean {
+    const answers = this.getAnswers(questionIndex);
+    const currentValue = answers.at(answerIndex).get('association_target')?.value?.trim().toLowerCase();
+    if (!currentValue) return false;
+    
+    for (let i = 0; i < answers.length; i++) {
+      if (i !== answerIndex) {
+        const otherValue = answers.at(i).get('association_target')?.value?.trim().toLowerCase();
+        if (otherValue === currentValue) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasDuplicatesInQuestion(questionIndex: number): boolean {
+    if (this.getQuestionType(questionIndex) !== 'association') return false;
+    
+    const answers = this.getAnswers(questionIndex);
+    for (let i = 0; i < answers.length; i++) {
+      if (this.hasLeftDuplicate(questionIndex, i) || this.hasRightDuplicate(questionIndex, i)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  hasAnyDuplicates(): boolean {
+    for (let i = 0; i < this.questions.length; i++) {
+      if (this.hasDuplicatesInQuestion(i)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   addQuestion() {
     const question = this.fb.group({
       content: ['', Validators.required],
@@ -117,12 +171,14 @@ export class CreateQuizComponent implements OnInit {
         this.fb.group({
           content: ['', Validators.required],
           is_correct: false,
-          correct_order: [0]
+          correct_order: [0],
+          association_target: ['']
         }),
         this.fb.group({
           content: ['', Validators.required],
           is_correct: false,
-          correct_order: [0]
+          correct_order: [0],
+          association_target: ['']
         }),
       ]),
     });
@@ -138,7 +194,8 @@ export class CreateQuizComponent implements OnInit {
       this.fb.group({ 
         content: ['', Validators.required], 
         is_correct: false,
-        correct_order: [0]
+        correct_order: [0],
+        association_target: ['']
       })
     );
   }
@@ -156,6 +213,13 @@ export class CreateQuizComponent implements OnInit {
 
   submit() {
     this.errorMessage = '';
+    
+    // Vérifier les doublons avant la validation
+    if (this.hasAnyDuplicates()) {
+      this.errorMessage = 'Veuillez corriger les doublons dans les questions d\'association avant de continuer.';
+      return;
+    }
+    
     const error = this.validateQuiz();
 
     if (this.form.invalid || error) {
@@ -201,6 +265,27 @@ export class CreateQuizComponent implements OnInit {
           if (order < 1 || order > q.answers.length) {
             return `L'ordre des réponses doit être entre 1 et ${q.answers.length}.`;
           }
+        }
+      } else if (q.type === 'association') {
+        // Validation spécifique pour les questions d'association
+        for (let j = 0; j < q.answers.length; j++) {
+          if (!q.answers[j].association_target || !q.answers[j].association_target.trim()) {
+            return 'Chaque élément d\'association doit avoir un élément associé.';
+          }
+        }
+        
+        // Vérifier les doublons dans les éléments de gauche
+        const leftContents = q.answers.map((a: any) => a.content.trim().toLowerCase());
+        const uniqueLeftContents = [...new Set(leftContents)];
+        if (uniqueLeftContents.length !== q.answers.length) {
+          return 'Les éléments de gauche ne peuvent pas être identiques dans une question d\'association.';
+        }
+        
+        // Vérifier les doublons dans les éléments de droite
+        const rightContents = q.answers.map((a: any) => a.association_target.trim().toLowerCase());
+        const uniqueRightContents = [...new Set(rightContents)];
+        if (uniqueRightContents.length !== q.answers.length) {
+          return 'Les éléments de droite ne peuvent pas être identiques dans une question d\'association.';
         }
       } else {
         // Validation pour QCM et autres types

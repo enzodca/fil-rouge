@@ -37,7 +37,8 @@ exports.createQuiz = async (req, res) => {
           content: a.content,
           is_correct: a.is_correct,
           question_id: question._id,
-          correct_order: a.correct_order || 0
+          correct_order: a.correct_order || 0,
+          association_target: a.association_target || null
         });
       }
     }
@@ -159,7 +160,8 @@ exports.updateQuiz = async (req, res) => {
             content: a.content,
             is_correct: a.is_correct,
             question_id: question._id,
-            correct_order: a.correct_order || 0
+            correct_order: a.correct_order || 0,
+            association_target: a.association_target || null
           });
         }
       } else {
@@ -175,7 +177,8 @@ exports.updateQuiz = async (req, res) => {
             content: a.content,
             is_correct: a.is_correct,
             question_id: question._id,
-            correct_order: a.correct_order || 0
+            correct_order: a.correct_order || 0,
+            association_target: a.association_target || null
           });
         }
       }

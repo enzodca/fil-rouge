@@ -69,6 +69,7 @@
                   <mat-option value="QCM">QCM</mat-option>
                   <mat-option value="ordre">Ordre</mat-option>
                   <mat-option value="intrus">Intrus</mat-option>
+                  <mat-option value="association">Association</mat-option>
                 </mat-select>
               </mat-form-field>
 
@@ -85,33 +86,78 @@
 
               <div formArrayName="answers">
                 <h4>Réponses</h4>
-                <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Réponse</mat-label>
-                    <input matInput type="text" formControlName="content" placeholder="Réponse" />
-                  </mat-form-field>
-                  
-                  <!-- Pour les questions d'ordre -->
-                  <mat-form-field *ngIf="getQuestionType(i) === 'ordre'" appearance="outline" class="order-field">
-                    <mat-label>Ordre</mat-label>
-                    <input matInput type="number" formControlName="correct_order" 
-                           [min]="1" [max]="getAnswers(i).length" placeholder="1" />
-                  </mat-form-field>
-                  
-                  <!-- Pour les autres types de questions -->
-                  <mat-checkbox *ngIf="getQuestionType(i) !== 'ordre'" formControlName="is_correct">Correcte</mat-checkbox>
-                  
-                  <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
-                          *ngIf="getAnswers(i).length > 2">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
                 
-                <div *ngIf="getQuestionType(i) === 'ordre'" class="ordre-info">
-                  <mat-icon>info</mat-icon>
-                  <span>Indiquez l'ordre correct (1, 2, 3...) pour chaque réponse</span>
+                <!-- Interface pour les questions d'association -->
+                <div *ngIf="getQuestionType(i) === 'association'" class="association-interface">
+                  <div class="association-columns">
+                    <div class="column">
+                      <h5>Éléments de gauche</h5>
+                      <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                        <mat-form-field appearance="outline" class="full-width" 
+                                        [class.duplicate-error]="hasLeftDuplicate(i, j)">
+                          <mat-label>Élément {{ j + 1 }}</mat-label>
+                          <input matInput type="text" formControlName="content" placeholder="Élément à associer" />
+                          <mat-error *ngIf="hasLeftDuplicate(i, j)">
+                            Cet élément existe déjà
+                          </mat-error>
+                        </mat-form-field>
+                        <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
+                                *ngIf="getAnswers(i).length > 2">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <h5>Éléments de droite (associations correctes)</h5>
+                      <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                        <mat-form-field appearance="outline" class="full-width"
+                                        [class.duplicate-error]="hasRightDuplicate(i, j)">
+                          <mat-label>Association {{ j + 1 }}</mat-label>
+                          <input matInput type="text" formControlName="association_target" placeholder="Élément associé" />
+                          <mat-error *ngIf="hasRightDuplicate(i, j)">
+                            Cet élément existe déjà
+                          </mat-error>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="association-info">
+                    <mat-icon>info</mat-icon>
+                    <span>Créez des paires d'éléments à associer. L'ordre des éléments de droite correspond à celui de gauche.</span>
+                  </div>
                 </div>
+
+                <!-- Interface pour les autres types de questions -->
+                <div *ngIf="getQuestionType(i) !== 'association'">
+                  <div *ngFor="let a of getAnswers(i).controls; let j=index" [formGroupName]="j" class="answer-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Réponse</mat-label>
+                      <input matInput type="text" formControlName="content" placeholder="Réponse" />
+                    </mat-form-field>
+                    
+                    <!-- Pour les questions d'ordre -->
+                    <mat-form-field *ngIf="getQuestionType(i) === 'ordre'" appearance="outline" class="order-field">
+                      <mat-label>Ordre</mat-label>
+                      <input matInput type="number" formControlName="correct_order" 
+                             [min]="1" [max]="getAnswers(i).length" placeholder="1" />
+                    </mat-form-field>
+                    
+                    <!-- Pour les autres types de questions -->
+                    <mat-checkbox *ngIf="getQuestionType(i) !== 'ordre'" formControlName="is_correct">Correcte</mat-checkbox>
+                    
+                    <button mat-icon-button color="warn" type="button" (click)="removeAnswer(i, j)" 
+                            *ngIf="getAnswers(i).length > 2">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                  
+                  <div *ngIf="getQuestionType(i) === 'ordre'" class="ordre-info">
+                    <mat-icon>info</mat-icon>
+                    <span>Indiquez l'ordre correct (1, 2, 3...) pour chaque réponse</span>
+                  </div>
+                </div>
+                
+                <button mat-stroked-button color="accent" type="button" (click)="addAnswer(i)">+ Ajouter réponse</button>
               </div>
             </mat-card-content>
           </mat-card>

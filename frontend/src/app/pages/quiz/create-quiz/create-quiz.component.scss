@@ -61,3 +61,42 @@
   color: #1976d2;
   font-weight: 500;
 }
+
+.association-interface {
+  .association-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2em;
+    margin-bottom: 1em;
+    
+    .column {
+      h5 {
+        margin: 0 0 1em 0;
+        color: #1976d2;
+        font-weight: 500;
+      }
+    }
+  }
+  
+  .association-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 0.5em;
+    color: #4caf50;
+    font-size: 0.9em;
+    padding: 0.5em;
+    background-color: #e8f5e8;
+    border-radius: 4px;
+  }
+}
+
+.duplicate-error {
+  .mat-form-field-outline {
+    color: #f44336 !important;
+  }
+  
+  .mat-form-field-label {
+    color: #f44336 !important;
+  }
+}

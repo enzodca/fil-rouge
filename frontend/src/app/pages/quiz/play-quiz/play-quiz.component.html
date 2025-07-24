@@ -29,9 +29,7 @@
               <mat-icon [class.timer-warning]="timeRemaining <= 10">access_time</mat-icon>
               <span [class.timer-warning]="timeRemaining <= 10">{{ formatTime(timeRemaining) }}</span>
             </div>
-            <mat-progress-bar 
-              mode="determinate" 
-              [value]="timeRemainingPercentage"
+            <mat-progress-bar mode="determinate" [value]="timeRemainingPercentage"
               [color]="timeRemaining <= 10 ? 'warn' : 'primary'">
             </mat-progress-bar>
           </mat-card-content>
@@ -66,7 +64,45 @@
             </div>
           </div>
 
-          <div *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre'" class="answers-container">
+          <div *ngIf="currentQuestion.type === 'association'" class="association-container">
+            <div class="association-instructions">
+              <mat-icon>connect_without_contact</mat-icon>
+              <span>Cliquez sur un élément de gauche, puis sur l'élément correspondant de droite</span>
+            </div>
+            <div class="association-game">
+              <div class="association-column left-column">
+                <h4>Éléments à associer</h4>
+                <button *ngFor="let answer of currentQuestion.answers" mat-stroked-button class="association-item"
+                  [class.selected]="isLeftItemSelected(answer)" [class.matched]="getAssociationForLeft(answer.content)"
+                  [color]="isLeftItemSelected(answer) ? 'primary' : (getAssociationForLeft(answer.content) ? 'accent' : '')"
+                  (click)="selectLeftItem(answer)">
+                  {{ answer.content }}
+                </button>
+              </div>
+              <div class="association-column right-column">
+                <h4>Associations possibles</h4>
+                <button *ngFor="let rightItem of shuffledRightItems" mat-stroked-button class="association-item"
+                  [class.used]="isRightItemUsed(rightItem)" [disabled]="!selectedLeftItem || isRightItemUsed(rightItem)"
+                  [color]="isRightItemUsed(rightItem) ? 'accent' : ''" (click)="associateWithRight(rightItem)">
+                  {{ rightItem }}
+                  <mat-icon *ngIf="isRightItemUsed(rightItem)" class="used-icon">check</mat-icon>
+                </button>
+              </div>
+            </div>
+            <div class="association-status" *ngIf="Object.keys(getForm(currentQuestion._id)?.value || {}).length > 0">
+              <h5>Associations actuelles :</h5>
+              <div *ngFor="let pair of Object.entries(getForm(currentQuestion._id)?.value || {})"
+                class="association-pair">
+                <span class="pair-left">{{ pair[0] }}</span>
+                <mat-icon>arrow_forward</mat-icon>
+                <span class="pair-right">{{ pair[1] }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre' && currentQuestion.type !== 'association'"
+            class="answers-container">
             <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
               [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
               class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">
@@ -78,10 +114,8 @@
 
       <div class="navigation-container">
         <div class="navigation-row">
-          <button mat-raised-button 
-                  color="primary" 
-                  (click)="validateCurrentAnswer()"
-                  [disabled]="!hasAnsweredCurrentQuestion()">
+          <button mat-raised-button color="primary" (click)="validateCurrentAnswer()"
+            [disabled]="!hasAnsweredCurrentQuestion()">
             <span *ngIf="!isLastQuestion">Valider la réponse</span>
             <span *ngIf="isLastQuestion">Terminer le quiz</span>
             <mat-icon>{{ isLastQuestion ? 'check' : 'check_circle' }}</mat-icon>

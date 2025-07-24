@@ -78,6 +78,8 @@ export class QuizListComponent implements OnInit {
         return 'Ordre';
       case 'intrus':
         return 'Intrus';
+      case 'association':
+        return 'Association';
       default:
         return type;
     }
