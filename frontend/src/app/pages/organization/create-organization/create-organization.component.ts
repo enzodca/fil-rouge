@@ -8,7 +8,8 @@ import { NotificationService } from '../../../services/notification/notification
 @Component({
   selector: 'app-create-organization',
   imports: [SharedModule],
-  templateUrl: './create-organization.component.html'
+  templateUrl: './create-organization.component.html',
+  styleUrls: ['./create-organization.component.scss'],
 })
 export class CreateOrganizationComponent {
   form: FormGroup;

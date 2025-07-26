@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { AccueilComponent } from './pages/acceuil/accueil.component';
@@ -14,7 +13,6 @@ import { OrganizationComponent } from './pages/organization/organization/organiz
 
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
   { path: "login", component: LoginComponent },
   { path: "register", component: RegisterComponent },
   { path: "accueil", component: AccueilComponent, canActivate: [authGuard] },
@@ -24,5 +22,5 @@ export const routes: Routes = [
   { path: 'edit-quiz/:id', component: EditQuizComponent, canActivate: [authGuard] },
   { path: 'create-organization', component: CreateOrganizationComponent, canActivate: [authGuard] },
   { path: 'organization/:id', component: OrganizationComponent, canActivate: [authGuard] },
-  { path: '**',redirectTo: '' }
+  { path: '**',redirectTo: 'login' }
 ];

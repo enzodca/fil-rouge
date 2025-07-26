@@ -1,179 +1,183 @@
-<mat-card>
-  <mat-card-title class="center-title">Jouer au quiz</mat-card-title>
-  <mat-card-content>
-    <div *ngIf="showResults" class="results-container">
-      <h3>Quiz terminé !</h3>
-      <h2>Score : {{ score }} / {{ questions.length }}</h2>
-      <p>{{ (score! / questions.length * 100) | number:'1.0-0' }}% de réussite</p>
-      <a routerLink="/quiz-list">
-        <button mat-raised-button color="primary">
-          <mat-icon>arrow_back</mat-icon> Retour aux quiz
-        </button>
-      </a>
-    </div>
-
-    <div *ngIf="!showResults && currentQuestion" class="question-container">
-      <div class="progress-container">
-        <mat-progress-bar mode="determinate" [value]="((currentQuestionIndex + 1) / questions.length) * 100">
-        </mat-progress-bar>
-        <p class="progress-text">
-          Question {{ currentQuestionIndex + 1 }} sur {{ questions.length }}
-        </p>
+<div class="play-quiz-page fade-in">
+  <mat-card class="quiz-card">
+    <mat-card-title class="center-title">Jouer au quiz</mat-card-title>
+    <mat-card-content>
+      <div *ngIf="showResults" class="results-section">
+        <h3>Quiz terminé !</h3>
+        <h2>Score : {{ score }} / {{ questions.length }}</h2>
+        <p>{{ (score! / questions.length * 100) | number:'1.0-0' }}% de réussite</p>
+        <a routerLink="/quiz-list">
+          <button mat-raised-button class="back-button">
+            <mat-icon>arrow_back</mat-icon> Retour aux quiz
+          </button>
+        </a>
       </div>
 
-      <div *ngIf="hasTimer" class="timer-container">
-        <mat-card class="timer-card">
+      <div *ngIf="!showResults && currentQuestion" class="question-container">
+        <div class="progress-container">
+          <mat-progress-bar mode="determinate" [value]="((currentQuestionIndex + 1) / questions.length) * 100">
+          </mat-progress-bar>
+          <p class="progress-text">
+            Question {{ currentQuestionIndex + 1 }} sur {{ questions.length }}
+          </p>
+        </div>
+
+        <div *ngIf="hasTimer" class="timer-container">
+          <mat-card class="timer-card">
+            <mat-card-content>
+              <div class="timer-display" [class.timer-warning]="timeRemaining <= 10">
+                <mat-icon [class.timer-warning]="timeRemaining <= 10">access_time</mat-icon>
+                <span [class.timer-warning]="timeRemaining <= 10">{{ formatTime(timeRemaining) }}</span>
+              </div>
+              <mat-progress-bar 
+                mode="determinate" 
+                [value]="timeRemainingPercentage"
+                [color]="timeRemaining <= 10 ? 'warn' : 'primary'">
+              </mat-progress-bar>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <mat-card class="question-card">
           <mat-card-content>
-            <div class="timer-display">
-              <mat-icon [class.timer-warning]="timeRemaining <= 10">access_time</mat-icon>
-              <span [class.timer-warning]="timeRemaining <= 10">{{ formatTime(timeRemaining) }}</span>
-            </div>
-            <mat-progress-bar mode="determinate" [value]="timeRemainingPercentage"
-              [color]="timeRemaining <= 10 ? 'warn' : 'primary'">
-            </mat-progress-bar>
-          </mat-card-content>
-        </mat-card>
-      </div>
+            <h3 class="question-title">{{ currentQuestion.content }}</h3>
 
-      <mat-card class="question-card">
-        <mat-card-content>
-          <h3 class="question-title">{{ currentQuestion.content }}</h3>
-
-          <div *ngIf="currentQuestion.type === 'QCM'" class="answers-container">
-            <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
-              [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
-              class="answer-button" (click)="toggleAnswer(currentQuestion._id, j)">
-              {{ answer.content }}
-            </button>
-          </div>
-
-          <div *ngIf="currentQuestion.type === 'ordre'" class="order-container">
-            <div class="order-instructions">
-              <mat-icon>drag_indicator</mat-icon>
-              <span>Glissez-déposez les éléments pour les remettre dans le bon ordre</span>
-            </div>
-            <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="order-list">
-              <div *ngFor="let answer of orderAnswers; let i = index" cdkDrag class="order-item">
-                <div class="order-item-content">
-                  <mat-icon cdkDragHandle>drag_indicator</mat-icon>
-                  <span class="order-number">{{ i + 1 }}.</span>
-                  <span class="order-text">{{ answer.content }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="currentQuestion.type === 'association'" class="association-container">
-            <div class="association-instructions">
-              <mat-icon>connect_without_contact</mat-icon>
-              <span>Cliquez sur un élément de gauche, puis sur l'élément correspondant de droite</span>
-            </div>
-            <div class="association-game">
-              <div class="association-column left-column">
-                <h4>Éléments à associer</h4>
-                <button *ngFor="let answer of currentQuestion.answers" mat-stroked-button class="association-item"
-                  [class.selected]="isLeftItemSelected(answer)" [class.matched]="getAssociationForLeft(answer.content)"
-                  [color]="isLeftItemSelected(answer) ? 'primary' : (getAssociationForLeft(answer.content) ? 'accent' : '')"
-                  (click)="selectLeftItem(answer)">
-                  {{ answer.content }}
-                </button>
-              </div>
-              <div class="association-column right-column">
-                <h4>Associations possibles</h4>
-                <button *ngFor="let rightItem of shuffledRightItems" mat-stroked-button class="association-item"
-                  [class.used]="isRightItemUsed(rightItem)" [disabled]="!selectedLeftItem || isRightItemUsed(rightItem)"
-                  [color]="isRightItemUsed(rightItem) ? 'accent' : ''" (click)="associateWithRight(rightItem)">
-                  {{ rightItem }}
-                  <mat-icon *ngIf="isRightItemUsed(rightItem)" class="used-icon">check</mat-icon>
-                </button>
-              </div>
-            </div>
-            <div class="association-status" *ngIf="Object.keys(getForm(currentQuestion._id)?.value || {}).length > 0">
-              <h5>Associations actuelles :</h5>
-              <div *ngFor="let pair of Object.entries(getForm(currentQuestion._id)?.value || {})"
-                class="association-pair">
-                <span class="pair-left">{{ pair[0] }}</span>
-                <mat-icon>arrow_forward</mat-icon>
-                <span class="pair-right">{{ pair[1] }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="currentQuestion.type === 'blind_test'" class="blind-test-container">
-            <div class="blind-test-instructions">
-              <mat-icon>audiotrack</mat-icon>
-              <span>Écoutez l'extrait audio et choisissez la bonne réponse</span>
-            </div>
-
-            <div class="audio-player-section">
-              <audio #audioPlayer [src]="getAudioUrl(currentQuestion)" class="audio-player-hidden"
-                [controlsList]="'nodownload nofullscreen noremoteplayback'" oncontextmenu="return false;"
-                disablePictureInPicture="true">
-                Votre navigateur ne supporte pas la lecture audio.
-              </audio>
-
-              <div class="custom-audio-controls">
-                <div class="main-controls">
-                  <button mat-fab color="primary" class="control-button play-pause-btn" (click)="togglePlayPause()"
-                    [attr.aria-label]="isPlaying ? 'Pause' : 'Play'">
-                    <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
-                  </button>
-
-                  <button mat-icon-button color="accent" class="control-button restart-btn" (click)="restartAudio()"
-                    aria-label="Recommencer">
-                    <mat-icon>replay</mat-icon>
-                  </button>
-                </div>
-
-                <div class="volume-control">
-                  <mat-icon class="volume-icon">volume_up</mat-icon>
-                  <input type="range" class="volume-slider" min="0" max="100" [value]="volume"
-                    (input)="onVolumeChange($event)" aria-label="Volume">
-                  <span class="volume-text">{{ volume }}%</span>
-                </div>
-
-                <div class="audio-progress" *ngIf="duration > 0">
-                  <div class="progress-info">
-                    <span class="current-time">{{ formatAudioTime(currentTime) }}/</span>
-                    <span class="duration">{{ formatAudioTime(duration) }}</span>
-                  </div>
-                  <mat-progress-bar mode="determinate" [value]="progressPercentage" class="audio-progress-bar">
-                  </mat-progress-bar>
-                </div>
-              </div>
-            </div>
-
-            <div class="blind-test-answers">
+            <div *ngIf="currentQuestion.type === 'QCM'" class="answers-container">
               <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
                 [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
-                class="answer-button blind-test-answer" (click)="selectAnswer(currentQuestion._id, answer.content)">
+                class="answer-button" (click)="toggleAnswer(currentQuestion._id, j)">
                 {{ answer.content }}
               </button>
             </div>
-          </div>
 
-          <div
-            *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre' && currentQuestion.type !== 'association' && currentQuestion.type !== 'blind_test'"
-            class="answers-container">
-            <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
-              [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
-              class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">
-              {{ answer.content }}
+            <div *ngIf="currentQuestion.type === 'ordre'" class="order-container">
+              <div class="order-instructions">
+                <mat-icon>drag_indicator</mat-icon>
+                <span>Glissez-déposez les éléments pour les remettre dans le bon ordre</span>
+              </div>
+              <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="order-list">
+                <div *ngFor="let answer of orderAnswers; let i = index" cdkDrag class="order-item">
+                  <div class="order-item-content">
+                    <mat-icon>drag_indicator</mat-icon>
+                    <span class="order-number">{{ i + 1 }}</span>
+                    <span class="order-text">{{ answer.content }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="currentQuestion.type === 'association'" class="association-container">
+              <div class="association-instructions">
+                <mat-icon>connect_without_contact</mat-icon>
+                <span>Cliquez sur un élément de gauche, puis sur l'élément correspondant de droite</span>
+              </div>
+              <div class="association-game">
+                <div class="association-column left-column">
+                  <h4>Éléments à associer</h4>
+                  <button *ngFor="let answer of currentQuestion.answers" mat-stroked-button class="association-item"
+                    [class.selected]="isLeftItemSelected(answer)" [class.matched]="getAssociationForLeft(answer.content)"
+                    [color]="isLeftItemSelected(answer) ? 'primary' : (getAssociationForLeft(answer.content) ? 'accent' : '')"
+                    (click)="selectLeftItem(answer)">
+                    {{ answer.content }}
+                  </button>
+                </div>
+                <div class="association-column right-column">
+                  <h4>Associations possibles</h4>
+                  <button *ngFor="let rightItem of shuffledRightItems" mat-stroked-button class="association-item"
+                    [class.used]="isRightItemUsed(rightItem)" [disabled]="!selectedLeftItem || isRightItemUsed(rightItem)"
+                    [color]="isRightItemUsed(rightItem) ? 'accent' : ''" (click)="associateWithRight(rightItem)">
+                    {{ rightItem }}
+                    <mat-icon *ngIf="isRightItemUsed(rightItem)" class="used-icon">check</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="association-status" *ngIf="Object.keys(getForm(currentQuestion._id)?.value || {}).length > 0">
+                <h5>Associations actuelles :</h5>
+                <div *ngFor="let pair of Object.entries(getForm(currentQuestion._id)?.value || {})"
+                  class="association-pair">
+                  <span class="pair-left">{{ pair[0] }}</span>
+                  <mat-icon>arrow_forward</mat-icon>
+                  <span class="pair-right">{{ pair[1] }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="currentQuestion.type === 'blind_test'" class="blind-test-container">
+              <div class="blind-test-instructions">
+                <mat-icon>audiotrack</mat-icon>
+                <span>Écoutez l'extrait audio et choisissez la bonne réponse</span>
+              </div>
+
+              <div class="audio-player-section">
+                <audio #audioPlayer [src]="getAudioUrl(currentQuestion)" class="audio-player-hidden"
+                  [controlsList]="'nodownload nofullscreen noremoteplayback'" oncontextmenu="return false;"
+                  disablePictureInPicture="true">
+                  Votre navigateur ne supporte pas la lecture audio.
+                </audio>
+
+                <div class="custom-audio-controls">
+                  <div class="main-controls">
+                    <button mat-fab color="primary" class="control-button play-pause-btn" (click)="togglePlayPause()"
+                      [attr.aria-label]="isPlaying ? 'Pause' : 'Play'">
+                      <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+                    </button>
+
+                    <button mat-icon-button color="accent" class="control-button restart-btn" (click)="restartAudio()"
+                      aria-label="Recommencer">
+                      <mat-icon>replay</mat-icon>
+                    </button>
+                  </div>
+
+                  <div class="volume-control">
+                    <mat-icon class="volume-icon">volume_up</mat-icon>
+                    <input type="range" class="volume-slider" min="0" max="100" [value]="volume"
+                      (input)="onVolumeChange($event)" aria-label="Volume">
+                    <span class="volume-text">{{ volume }}%</span>
+                  </div>
+
+                  <div class="audio-progress" *ngIf="duration > 0">
+                    <div class="progress-info">
+                      <span class="current-time">{{ formatAudioTime(currentTime) }}/</span>
+                      <span class="duration">{{ formatAudioTime(duration) }}</span>
+                    </div>
+                    <mat-progress-bar mode="determinate" [value]="progressPercentage" class="audio-progress-bar">
+                    </mat-progress-bar>
+                  </div>
+                </div>
+              </div>
+
+              <div class="blind-test-answers">
+                <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
+                  [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
+                  class="answer-button blind-test-answer" (click)="selectAnswer(currentQuestion._id, answer.content)">
+                  {{ answer.content }}
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="currentQuestion.type !== 'QCM' && currentQuestion.type !== 'ordre' && currentQuestion.type !== 'association' && currentQuestion.type !== 'blind_test'" class="answers-container">
+              <button *ngFor="let answer of currentQuestion.answers; let j = index" mat-stroked-button
+                [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
+                class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">
+                {{ answer.content }}
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <div class="navigation-container">
+          <div class="navigation-row">
+            <button mat-raised-button 
+                    class="validate-button"
+                    (click)="validateCurrentAnswer()"
+                    [disabled]="!hasAnsweredCurrentQuestion()">
+              <span *ngIf="!isLastQuestion">Valider la réponse</span>
+              <span *ngIf="isLastQuestion">Terminer le quiz</span>
+              <mat-icon>{{ isLastQuestion ? 'check' : 'check_circle' }}</mat-icon>
             </button>
           </div>
-        </mat-card-content>
-      </mat-card>
-
-      <div class="navigation-container">
-        <div class="navigation-row">
-          <button mat-raised-button color="primary" (click)="validateCurrentAnswer()"
-            [disabled]="!hasAnsweredCurrentQuestion()">
-            <span *ngIf="!isLastQuestion">Valider la réponse</span>
-            <span *ngIf="isLastQuestion">Terminer le quiz</span>
-            <mat-icon>{{ isLastQuestion ? 'check' : 'check_circle' }}</mat-icon>
-          </button>
         </div>
       </div>
-    </div>
-  </mat-card-content>
-</mat-card>
+    </mat-card-content>
+  </mat-card>
+</div>

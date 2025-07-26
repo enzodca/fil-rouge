@@ -1,22 +1,68 @@
-<mat-card class="register-card">
-  <mat-card-title class="center-title">Inscription</mat-card-title>
-  <mat-card-content>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nom d'utilisateur</mat-label>
-        <input matInput formControlName="username" required />
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="email" required />
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Mot de passe</mat-label>
-        <input matInput type="password" formControlName="password" required />
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit">
-        <mat-icon>person_add</mat-icon> Créer un compte
-      </button>
-    </form>
-  </mat-card-content>
-</mat-card>
+<div class="register-container fade-in">
+  <mat-card class="register-card">
+    <mat-card-title class="register-title">Inscription</mat-card-title>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register-form">
+        <div class="form-field">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom d'utilisateur</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
+            <input matInput formControlName="username" required autocomplete="username"
+              placeholder="Votre nom d'utilisateur" />
+            <mat-error *ngIf="form.get('username')?.hasError('required')">
+              Le nom d'utilisateur est requis
+            </mat-error>
+            <mat-error *ngIf="form.get('username')?.hasError('minlength')">
+              Le nom d'utilisateur doit contenir au moins 3 caractères
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Adresse email</mat-label>
+            <mat-icon matPrefix>email</mat-icon>
+            <input matInput type="email" formControlName="email" required autocomplete="email"
+              placeholder="votre@email.com" />
+            <mat-error *ngIf="form.get('email')?.hasError('required')">
+              L'email est requis
+            </mat-error>
+            <mat-error *ngIf="form.get('email')?.hasError('email')">
+              Veuillez entrer un email valide
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput type="password" formControlName="password" required autocomplete="new-password"
+              placeholder="••••••••" />
+            <mat-error *ngIf="form.get('password')?.hasError('required')">
+              Le mot de passe est requis
+            </mat-error>
+            <mat-error *ngIf="form.get('password')?.hasError('minlength')">
+              Le mot de passe doit contenir au moins 6 caractères
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <button mat-raised-button type="submit" class="submit-button full-width" [disabled]="form.invalid">
+          <mat-icon>person_add</mat-icon>
+          Créer mon compte
+        </button>
+      </form>
+
+      <div class="login-section">
+        <p class="login-text">Vous avez déjà un compte ?</p>
+        <a routerLink="/login">
+          <button mat-stroked-button class="login-button">
+            <mat-icon>login</mat-icon>
+            Se connecter
+          </button>
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

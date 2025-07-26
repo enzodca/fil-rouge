@@ -1,13 +1,33 @@
-<mat-card>
-  <mat-card-title>Créer une organisation</mat-card-title>
-  <mat-card-content>
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nom de l'organisation</mat-label>
-        <input matInput formControlName="name" required />
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit">Créer</button>
-    </form>
-    <div *ngIf="error" style="color:red;">{{ error }}</div>
-  </mat-card-content>
-</mat-card>
+<div class="create-organization-container create-organization-enter">
+  <mat-card class="organization-card">
+    <mat-card-header class="card-header">
+      <mat-card-title class="card-title">Créer une organisation</mat-card-title>
+      <mat-card-subtitle class="card-subtitle">
+        Donnez un nom à votre nouvelle organisation
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="card-content">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="organization-form">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Nom de l'organisation</mat-label>
+          <input matInput formControlName="name" required placeholder="Entrez le nom de votre organisation"
+            title="Nom de l'organisation" [disabled]="isLoading" />
+          <mat-icon matSuffix>business</mat-icon>
+        </mat-form-field>
+
+        <button mat-raised-button type="submit" class="submit-button" [class.loading-button]="isLoading"
+          [disabled]="form.invalid || isLoading">
+          <div *ngIf="isLoading" class="spinner"></div>
+          <mat-icon *ngIf="!isLoading">add_business</mat-icon>
+          {{ isLoading ? 'Création en cours...' : 'Créer l\'organisation' }}
+        </button>
+      </form>
+
+      <div *ngIf="error" class="error-message">
+        <mat-icon>error</mat-icon>
+        {{ error }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

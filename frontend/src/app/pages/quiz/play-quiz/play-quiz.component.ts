@@ -310,7 +310,6 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
       } else if (question.type === 'ordre') {
         const userOrder = this.form.value[question._id];
         const correctOrder = [...question.answers].sort((a, b) => a.correct_order - b.correct_order);
-
         const isCorrect = userOrder.length === correctOrder.length &&
           userOrder.every((answer: any, index: number) =>
             answer._id === correctOrder[index]._id

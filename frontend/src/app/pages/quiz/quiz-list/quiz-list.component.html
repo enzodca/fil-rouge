@@ -1,43 +1,62 @@
-<h2 class="quiz-list-title">Liste des Quiz disponibles</h2>
-<div class="quiz-list-container">
-  <ng-container *ngFor="let quiz of quizzes">
-    <mat-card class="quiz-card">
-      <mat-card-title>
-        <mat-icon class="quiz-title-icon">quiz</mat-icon>
-        <span class="quiz-title-text">{{ quiz.title }}</span>
-      </mat-card-title>
-      <mat-card-content>
-        <div class="quiz-description">{{ quiz.description }}</div>
-        <div class="question-types" *ngIf="quiz.questionTypes?.length">
-          <span *ngFor="let type of quiz.questionTypes" class="question-type-tag" [ngClass]="getTagClass(type)">
-            {{ getTypeLabel(type) }}
-          </span>
-        </div>
-        <div class="timer-info" *ngIf="quiz.has_timer">
-          <mat-icon class="timer-icon">access_time</mat-icon>
-          <span class="timer-text">
-            Temps total : {{ formatTime(quiz.total_time || 0) }}
-          </span>
-        </div>
-        <small>Créé par : {{ quiz.creator_id?.username || 'inconnu' }}</small>
-      </mat-card-content>
-      <mat-card-actions>
-        <a [routerLink]="['/play-quiz', quiz._id]">
-          <button mat-raised-button color="primary">
-            <mat-icon>play_arrow</mat-icon> Jouer
-          </button>
-        </a>
-        <button mat-stroked-button color="accent" *ngIf="quiz.visibility !== 'public' && canDelete(quiz)"
-          (click)="inviteUser(quiz._id)">
-          <mat-icon>mail</mat-icon> Inviter
-        </button>
-        <button mat-stroked-button color="primary" *ngIf="canDelete(quiz)" [routerLink]="['/edit-quiz', quiz._id]">
-          <mat-icon>edit</mat-icon> Modifier
-        </button>
-        <button mat-stroked-button color="warn" *ngIf="canDelete(quiz)" (click)="deleteQuiz(quiz._id)">
-          <mat-icon>delete</mat-icon> Supprimer
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </ng-container>
+<div class="quiz-list-wrapper">
+  <h2 class="quiz-list-title">Liste des Quiz disponibles</h2>
+  <div class="quiz-list-container">
+    <div class="quiz-grid">
+      <ng-container *ngFor="let quiz of quizzes">
+        <mat-card class="quiz-card">
+          <div class="quiz-card-content">
+            <div class="quiz-main-content">
+              <div class="quiz-header">
+                <div class="quiz-title-info">
+                  <h3 class="quiz-title-text">{{ quiz.title }}</h3>
+                  <div class="creator-info">
+                    <mat-icon class="creator-icon">person</mat-icon>
+                    <span class="creator-text">{{ quiz.creator_id?.username || 'inconnu' }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="quiz-description">{{ quiz.description }}</div>
+              
+              <div class="quiz-meta">
+                <div class="timer-info" *ngIf="quiz.has_timer">
+                  <mat-icon class="timer-icon">access_time</mat-icon>
+                  <span class="timer-text">
+                    Temps total : {{ formatTime(quiz.total_time || 0) }}
+                  </span>
+                </div>
+                <div class="question-types" *ngIf="quiz.questionTypes?.length">
+                  <span *ngFor="let type of quiz.questionTypes" class="question-type-tag" [ngClass]="getTagClass(type)">
+                    {{ getTypeLabel(type) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="quiz-actions">
+              <a [routerLink]="['/play-quiz', quiz._id]">
+                <button mat-fab color="primary" class="play-button">
+                  <mat-icon>play_arrow</mat-icon>
+                </button>
+              </a>
+              <div class="action-buttons">
+                <button mat-icon-button color="accent" *ngIf="quiz.visibility !== 'public' && canDelete(quiz)"
+                    (click)="inviteUser(quiz._id)" class="action-btn" title="Inviter">
+                  <mat-icon>mail</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" *ngIf="canDelete(quiz)" [routerLink]="['/edit-quiz', quiz._id]"
+                    class="action-btn" title="Modifier">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" *ngIf="canDelete(quiz)" (click)="deleteQuiz(quiz._id)"
+                    class="action-btn" title="Supprimer">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card>
+      </ng-container>
+    </div>
+  </div>
 </div>

@@ -6,7 +6,8 @@ import { SharedModule } from '../shared/shared.module';
 @Component({
   selector: 'app-header',
   imports: [SharedModule],
-  templateUrl: './header.component.html'
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent {
   constructor(
@@ -27,11 +28,11 @@ export class HeaderComponent {
   }
 
   goHome() {
-    this.router.navigate([this.auth.isLoggedIn() ? '/accueil' : '/']);
+    this.router.navigate([this.auth.isLoggedIn() ? '/accueil' : '/login']);
   }
 
   logout() {
     this.auth.logout();
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
   }
 }
