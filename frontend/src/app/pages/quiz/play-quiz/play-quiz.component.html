@@ -47,6 +47,7 @@
                 [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
                 class="answer-button" (click)="toggleAnswer(currentQuestion._id, j)">
                 {{ answer.content }}
+                <mat-icon *ngIf="isAnswerSelected(j)" class="selected-icon">check</mat-icon>
               </button>
             </div>
 
@@ -68,7 +69,6 @@
 
             <div *ngIf="currentQuestion.type === 'association'" class="association-container">
               <div class="association-instructions">
-                <mat-icon>connect_without_contact</mat-icon>
                 <span>Cliquez sur un élément de gauche, puis sur l'élément correspondant de droite</span>
               </div>
               <div class="association-game">
@@ -79,6 +79,8 @@
                     [color]="isLeftItemSelected(answer) ? 'primary' : (getAssociationForLeft(answer.content) ? 'accent' : '')"
                     (click)="selectLeftItem(answer)">
                     {{ answer.content }}
+                    <mat-icon *ngIf="isLeftItemSelected(answer)" class="selected-icon">radio_button_checked</mat-icon>
+                    <mat-icon *ngIf="getAssociationForLeft(answer.content) && !isLeftItemSelected(answer)" class="matched-icon">check</mat-icon>
                   </button>
                 </div>
                 <div class="association-column right-column">
@@ -151,6 +153,7 @@
                   [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
                   class="answer-button blind-test-answer" (click)="selectAnswer(currentQuestion._id, answer.content)">
                   {{ answer.content }}
+                  <mat-icon *ngIf="isAnswerSelected(j)" class="selected-icon">music_note</mat-icon>
                 </button>
               </div>
             </div>
@@ -160,6 +163,7 @@
                 [class.selected]="isAnswerSelected(j)" [color]="isAnswerSelected(j) ? 'primary' : ''"
                 class="answer-button" (click)="selectAnswer(currentQuestion._id, answer.content)">
                 {{ answer.content }}
+                <mat-icon *ngIf="isAnswerSelected(j)" class="selected-icon">check</mat-icon>
               </button>
             </div>
           </mat-card-content>
