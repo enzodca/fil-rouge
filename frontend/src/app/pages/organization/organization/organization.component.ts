@@ -8,7 +8,8 @@ import { NotificationService } from '../../../services/notification/notification
 @Component({
   selector: 'app-organization',
   imports: [SharedModule],
-  templateUrl: './organization.component.html'
+  templateUrl: './organization.component.html',
+  styleUrls: ['./organization.component.scss'],
 })
 export class OrganizationComponent implements OnInit {
   organization: Organization | null = null;

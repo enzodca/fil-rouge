@@ -8,7 +8,8 @@ import { SharedModule } from '../../../shared/shared.module';
 @Component({
   selector: 'app-quiz-list',
   imports: [SharedModule],
-  templateUrl: './quiz-list.component.html'
+  templateUrl: './quiz-list.component.html',
+  styleUrls: ['./quiz-list.component.scss']
 })
 export class QuizListComponent implements OnInit {
   userId = '';
@@ -80,6 +81,8 @@ export class QuizListComponent implements OnInit {
         return 'Intrus';
       case 'association':
         return 'Association';
+      case 'blind_test':
+        return 'Blind Test';
       default:
         return type;
     }

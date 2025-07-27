@@ -86,6 +86,10 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
 
         this.initializeOrderAnswers();
         this.initializeAssociationAnswers();
+
+        setTimeout(() => {
+          this.initializeAudioForNewQuestion();
+        }, 200);
       },
       error: () => {
         this.notification.showError('Quiz introuvable');
@@ -230,19 +234,41 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
 
   restartAudio(): void {
     if (this.audioPlayer?.nativeElement) {
-      this.audioPlayer.nativeElement.currentTime = 0;
-      this.audioPlayer.nativeElement.play();
+      const audio = this.audioPlayer.nativeElement;
+      audio.currentTime = 0;
+      if (audio.readyState >= 2) {
+        audio.play().then(() => {
+          this.isPlaying = true;
+        }).catch(error => {
+          console.error('Erreur lors du redémarrage audio:', error);
+        });
+      }
     }
   }
 
   togglePlayPause(): void {
     if (!this.audioPlayer?.nativeElement) return;
     
-    if (this.audioPlayer.nativeElement.paused) {
-      this.audioPlayer.nativeElement.play();
-      this.isPlaying = true;
+    const audio = this.audioPlayer.nativeElement;
+    
+    if (audio.paused) {
+      if (audio.readyState >= 2) {
+        audio.play().then(() => {
+          this.isPlaying = true;
+        }).catch(error => {
+          console.error('Erreur lors de la lecture audio:', error);
+        });
+      } else {
+        audio.addEventListener('canplay', () => {
+          audio.play().then(() => {
+            this.isPlaying = true;
+          }).catch(error => {
+            console.error('Erreur lors de la lecture audio:', error);
+          });
+        }, { once: true });
+      }
     } else {
-      this.audioPlayer.nativeElement.pause();
+      audio.pause();
       this.isPlaying = false;
     }
   }
@@ -288,6 +314,22 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  initializeAudioForNewQuestion(): void {
+    if (this.currentQuestion && this.currentQuestion.type === 'blind_test') {
+      this.isPlaying = false;
+      this.currentTime = 0;
+      this.duration = 0;
+      
+      setTimeout(() => {
+        if (this.audioPlayer?.nativeElement) {
+          const audio = this.audioPlayer.nativeElement;
+          audio.load();
+          audio.volume = this.volume / 100;
+        }
+      }, 100);
+    }
+  }
+
   finishQuiz() {
     this.stopTimer();
     this.calculateScore();
@@ -310,7 +352,6 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
       } else if (question.type === 'ordre') {
         const userOrder = this.form.value[question._id];
         const correctOrder = [...question.answers].sort((a, b) => a.correct_order - b.correct_order);
-
         const isCorrect = userOrder.length === correctOrder.length &&
           userOrder.every((answer: any, index: number) =>
             answer._id === correctOrder[index]._id
@@ -384,6 +425,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
       this.currentQuestionIndex++;
       this.initializeOrderAnswers();
       this.initializeAssociationAnswers();
+      this.initializeAudioForNewQuestion();
       this.resetTimerForQuestion();
     }
   }

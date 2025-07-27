@@ -18,6 +18,8 @@ export class EditQuizComponent implements OnInit, OnDestroy {
   form: FormGroup;
   errorMessage = '';
   audioFiles = new Map<number, { file: File; url: string; name: string }>();
+  hasOrganization = false;
+  organizationName: string | null = null;
 
   get hasTimer(): boolean {
     return this.form.get('has_timer')?.value || false;
@@ -60,6 +62,11 @@ export class EditQuizComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.quizId = this.route.snapshot.paramMap.get('id') || '';
+    
+    this.auth.getToken() && this.auth.isLoggedIn()
+      ? this.authUserInfo()
+      : null;
+    
     this.http.get<any>(`${environment.apiUrl}/quiz/${this.quizId}`).subscribe({
       next: data => {
         this.form.patchValue({
@@ -82,6 +89,22 @@ export class EditQuizComponent implements OnInit, OnDestroy {
         this.router.navigate(['/quiz-list']);
       }
     });
+  }
+
+  private authUserInfo() {
+    this.authMe().subscribe({
+      next: (user) => {
+        this.hasOrganization = !!user.organization_id;
+        this.organizationName = user.organization_id?.name || null;
+      },
+      error: () => {
+        this.hasOrganization = false;
+      },
+    });
+  }
+
+  private authMe() {
+    return this.http.get<any>(`${environment.apiUrl}/auth/me`);
   }
 
   get questions(): FormArray {
@@ -153,43 +176,15 @@ export class EditQuizComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  addQuestion(q?: any) {
-    const question = this.fb.group({
-      content: [q?.content || '', Validators.required],
-      type: q?.type || 'QCM',
-      time_limit: [q?.time_limit || 30, [Validators.required, Validators.min(5), Validators.max(300)]],
-      answers: this.fb.array(
-        (q?.answers && q.answers.length > 0
-          ? q.answers.map((a: any) =>
-              this.fb.group({
-                content: [a.content, Validators.required],
-                is_correct: a.is_correct,
-                correct_order: [a.correct_order || 0],
-                association_target: [a.association_target || '']
-              })
-            )
-          : [
-              this.fb.group({ 
-                content: ['', Validators.required], 
-                is_correct: false,
-                correct_order: [0],
-                association_target: ['']
-              }),
-              this.fb.group({ 
-                content: ['', Validators.required], 
-                is_correct: false,
-                correct_order: [0],
-                association_target: ['']
-              })
-            ])
-      ),
-      _id: q?._id || null,
-      audio_file_name: q?.audio_file_name || null,
-      audio_url: q?.audio_url || null,
-      audio_data: q?.audio_data || null,
-      audio_mimetype: q?.audio_mimetype || null
-    });
-    this.questions.push(question);
+  addAnswer(qIndex: number) {
+    this.getAnswers(qIndex).push(
+      this.fb.group({ 
+        content: ['', Validators.required], 
+        is_correct: false,
+        correct_order: [0],
+        association_target: ['']
+      })
+    );
   }
 
   onAudioFileSelected(event: any, questionIndex: number): void {
@@ -271,17 +266,6 @@ export class EditQuizComponent implements OnInit, OnDestroy {
     this.audioFiles = newAudioFiles;
   }
 
-  addAnswer(qIndex: number) {
-    this.getAnswers(qIndex).push(
-      this.fb.group({ 
-        content: ['', Validators.required], 
-        is_correct: false,
-        correct_order: [0],
-        association_target: ['']
-      })
-    );
-  }
-
   removeAnswer(qIndex: number, aIndex: number) {
     const answers = this.getAnswers(qIndex);
     if (answers.length > 2) {
@@ -291,6 +275,45 @@ export class EditQuizComponent implements OnInit, OnDestroy {
 
   addEmail() {
     this.allowedEmails.push(this.fb.control(''));
+  }
+
+  addQuestion(q?: any) {
+    const question = this.fb.group({
+      content: [q?.content || '', Validators.required],
+      type: q?.type || 'QCM',
+      time_limit: [q?.time_limit || 30, [Validators.required, Validators.min(5), Validators.max(300)]],
+      answers: this.fb.array(
+        (q?.answers && q.answers.length > 0
+          ? q.answers.map((a: any) =>
+              this.fb.group({
+                content: [a.content, Validators.required],
+                is_correct: a.is_correct,
+                correct_order: [a.correct_order || 0],
+                association_target: [a.association_target || '']
+              })
+            )
+          : [
+              this.fb.group({ 
+                content: ['', Validators.required], 
+                is_correct: false,
+                correct_order: [0],
+                association_target: ['']
+              }),
+              this.fb.group({ 
+                content: ['', Validators.required], 
+                is_correct: false,
+                correct_order: [0],
+                association_target: ['']
+              })
+            ])
+      ),
+      _id: q?._id || null,
+      audio_file_name: q?.audio_file_name || null,
+      audio_url: q?.audio_url || null,
+      audio_data: q?.audio_data || null,
+      audio_mimetype: q?.audio_mimetype || null
+    });
+    this.questions.push(question);
   }
 
   async submit() {

@@ -1,10 +1,42 @@
-<div style="text-align:center; margin-top: 100px;">
-  <h1>Bienvenue {{ user?.username || '' }} !</h1>
-  <p>Tu es maintenant connecté à QUIZZ GAME MNS</p>
-  <a routerLink="/create-quiz">
-    <button mat-raised-button>Créer un quiz</button>
-  </a>
-  <a routerLink="/quiz-list">
-    <button mat-raised-button>Voir les quiz</button>
-  </a>
+<div class="welcome-container fade-in">
+  <div class="welcome-content">
+    <h1 class="welcome-title">
+      Bienvenue {{ user?.username || '' }} !
+    </h1>
+    <p class="welcome-subtitle">
+      Prêt à relever le défi ? Créez des quiz passionnants et testez vos connaissances avec 
+      <span class="highlight">QUIZGAME</span> - La plateforme interactive pour apprendre en s'amusant !
+    </p>
+    
+    <div class="action-buttons">
+      <a routerLink="/create-quiz">
+        <button mat-raised-button class="action-button primary-action">
+          <mat-icon>add_circle</mat-icon>
+          Créer un quiz
+        </button>
+      </a>
+      
+      <a routerLink="/quiz-list">
+        <button mat-raised-button class="action-button secondary-action">
+          <mat-icon>quiz</mat-icon>
+          Découvrir les quiz
+        </button>
+      </a>
+    </div>
+  </div>
+  
+  <div class="stats-section">
+    <div class="stat-item">
+      <mat-icon>quiz</mat-icon>
+      <span>Quiz créés: <span class="stat-number">a faire</span></span>
+    </div>
+    <div class="stat-item">
+      <mat-icon>people</mat-icon>
+      <span>Joueurs actifs: <span class="stat-number">a faire</span></span>
+    </div>
+    <div class="stat-item">
+      <mat-icon>emoji_events</mat-icon>
+      <span>Défis relevés: <span class="stat-number">a faire</span></span>
+    </div>
+  </div>
 </div>

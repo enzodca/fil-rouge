@@ -1,25 +1,50 @@
-<mat-card class="login-card">
-  <mat-card-title class="center-title">Connexion</mat-card-title>
-  <mat-card-content>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="email" required />
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Mot de passe</mat-label>
-        <input matInput type="password" formControlName="password" required />
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit">
-        <mat-icon>login</mat-icon> Connexion
-      </button>
-    </form>
-    <div style="margin-top: 1em;">
-      <a routerLink="/register">
-        <button mat-stroked-button color="accent">
-          <mat-icon>person_add</mat-icon> Se créer un compte
+<div class="login-container fade-in">
+  <mat-card class="login-card">
+    <mat-card-title class="login-title">Connexion</mat-card-title>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="form-field">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Adresse email</mat-label>
+            <mat-icon matPrefix>email</mat-icon>
+            <input matInput type="email" formControlName="email" required autocomplete="email"
+              placeholder="votre@email.com" />
+            <mat-error *ngIf="form.get('email')?.hasError('required')">
+              L'email est requis
+            </mat-error>
+            <mat-error *ngIf="form.get('email')?.hasError('email')">
+              Veuillez entrer un email valide
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput type="password" formControlName="password" required autocomplete="current-password"
+              placeholder="••••••••" />
+            <mat-error *ngIf="form.get('password')?.hasError('required')">
+              Le mot de passe est requis
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <button mat-raised-button type="submit" class="submit-button full-width" [disabled]="form.invalid">
+          <mat-icon>login</mat-icon>
+          Se connecter
         </button>
-      </a>
-    </div>
-  </mat-card-content>
-</mat-card>
+      </form>
+
+      <div class="register-section">
+        <p class="register-text">Vous n'avez pas encore de compte ?</p>
+        <a routerLink="/register">
+          <button mat-stroked-button class="register-button">
+            <mat-icon>person_add</mat-icon>
+            Créer un compte
+          </button>
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
