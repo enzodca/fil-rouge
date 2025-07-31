@@ -1,0 +1,65 @@
+<div class="success-container">
+    <mat-card class="success-card">
+        <mat-card-content>
+            <div *ngIf="isLoading" class="loading-section">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Vérification de votre paiement...</p>
+            </div>
+
+            <div *ngIf="!isLoading && paymentVerified" class="success-section">
+                <div class="success-icon">
+                    <mat-icon class="large-icon">check_circle</mat-icon>
+                </div>
+                <h1>Merci pour votre donation !</h1>
+                <p class="success-message">
+                    Votre paiement de <strong>{{ formatAmount(sessionDetails?.amount_total) }}€</strong>
+                    a été traité avec succès.
+                </p>
+                <div class="details" *ngIf="sessionDetails">
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <mat-icon>receipt</mat-icon>
+                            ID de transaction :
+                        </span>
+                        <span class="detail-value transaction-id">{{ sessionDetails.id }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <mat-icon>verified</mat-icon>
+                            Statut :
+                        </span>
+                        <span class="detail-value status-paid">{{ getPaymentStatusText(sessionDetails.payment_status)
+                            }}</span>
+                    </div>
+                </div>
+                <div class="gratitude">
+                    <mat-icon class="heart-icon">favorite</mat-icon>
+                    <p>
+                        Votre soutien nous aide énormément à améliorer QuizzGame
+                        et à développer de nouvelles fonctionnalités pour tous nos utilisateurs.
+                    </p>
+                </div>
+            </div>
+
+            <div *ngIf="!isLoading && !paymentVerified" class="error-section">
+                <div class="error-icon">
+                    <mat-icon class="large-icon error">error</mat-icon>
+                </div>
+                <h1>Erreur de vérification</h1>
+                <p>Nous n'avons pas pu vérifier votre paiement. Veuillez contacter le support.</p>
+            </div>
+        </mat-card-content>
+
+        <mat-card-actions align="end" class="card-actions">
+            <button mat-raised-button color="primary" (click)="goHome()" class="action-button">
+                <mat-icon>home</mat-icon>
+                Retourner à l'accueil
+            </button>
+            <button mat-stroked-button color="accent" (click)="makeDonation()" *ngIf="paymentVerified"
+                class="action-button">
+                <mat-icon>favorite</mat-icon>
+                Faire une autre donation
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>

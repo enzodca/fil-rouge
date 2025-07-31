@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
+const stripeRoutes = require('./routes/stripeRoutes');
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 
 app.use('/api/organization', organizationRoutes);
+
+app.use('/api/stripe', stripeRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));

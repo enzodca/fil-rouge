@@ -18,6 +18,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // CDK modules
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -36,7 +37,8 @@ const MATERIAL_MODULES = [
   MatProgressBarModule,
   MatSnackBarModule,
   MatDialogModule,
-  DragDropModule
+  DragDropModule,
+  MatProgressSpinnerModule
 ];
 
 @NgModule({

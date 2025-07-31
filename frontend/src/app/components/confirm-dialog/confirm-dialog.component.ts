@@ -4,7 +4,6 @@ import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-confirm-dialog',
-  standalone: true,
   imports: [SharedModule],
   template: `
     <h2 mat-dialog-title>Confirmation</h2>

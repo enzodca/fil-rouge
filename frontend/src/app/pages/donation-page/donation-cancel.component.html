@@ -1,0 +1,32 @@
+<div class="cancel-container">
+  <mat-card class="cancel-card">
+    <mat-card-content>
+      <div class="cancel-section">
+        <div class="cancel-icon">
+          <mat-icon class="large-icon">cancel</mat-icon>
+        </div>
+        <h1>Donation annulée</h1>
+        <p class="cancel-message">
+          Votre donation a été annulée. Aucun montant n'a été débité de votre compte.
+        </p>
+        <div class="encourage-section">
+          <mat-icon class="info-icon">lightbulb</mat-icon>
+          <p class="encourage-message">
+            Si vous avez changé d'avis, vous pouvez toujours nous soutenir plus tard !
+          </p>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end" class="card-actions">
+      <button mat-raised-button color="primary" (click)="goHome()" class="action-button">
+        <mat-icon>home</mat-icon>
+        Retourner à l'accueil
+      </button>
+      <button mat-stroked-button color="accent" (click)="tryAgain()" class="action-button">
+        <mat-icon>favorite</mat-icon>
+        Essayer à nouveau
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
