@@ -272,3 +272,22 @@ exports.getQuizLeaderboard = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la récupération du classement', error: err.message });
   }
 };
+
+exports.getStats = async (req, res) => {
+  try {
+    const totalQuizzes = await Quiz.countDocuments();
+
+    const User = require('../models/User');
+    const totalUsers = await User.countDocuments();
+
+    const totalGamesPlayed = await QuizResult.countDocuments();
+    
+    res.json({
+      totalQuizzes,
+      totalUsers,
+      totalGamesPlayed
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des statistiques', error: err.message });
+  }
+};
