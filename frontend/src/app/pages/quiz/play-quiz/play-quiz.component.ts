@@ -23,6 +23,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
   score: number | null = null;
   currentQuestionIndex = 0;
   showResults = false;
+  quizStartTime: number = 0;
 
   timeRemaining = 0;
   timerInterval: any;
@@ -55,6 +56,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.quizId = this.route.snapshot.paramMap.get('id') || '';
+    this.quizStartTime = Date.now();
     this.http.get<any>(`${environment.apiUrl}/quiz/${this.quizId}`).subscribe({
       next: data => {
         this.quiz = data;
@@ -333,7 +335,35 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
   finishQuiz() {
     this.stopTimer();
     this.calculateScore();
+
+    const timeTaken = Math.floor((Date.now() - this.quizStartTime) / 1000);
+
+    this.submitResult(timeTaken);
+    
     this.showResults = true;
+  }
+
+  submitResult(timeTaken: number) {
+    const resultData = {
+      quizId: this.quizId,
+      score: this.score,
+      totalQuestions: this.questions.length,
+      timeTaken: timeTaken
+    };
+
+    this.http.post(`${environment.apiUrl}/quiz/result`, resultData).subscribe({
+      next: (response: any) => {
+        if (response.isFirstAttempt) {
+          this.notification.showSuccess('Score enregistré pour le classement !');
+        } else {
+          this.notification.showInfo('Score enregistré (tentative supplémentaire)');
+        }
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'enregistrement du score:', error);
+        this.notification.showError('Erreur lors de l\'enregistrement du score');
+      }
+    });
   }
 
   calculateScore() {

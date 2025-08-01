@@ -1,6 +1,13 @@
 <div class="create-quiz-page">
   <mat-card class="create-quiz-card">
-    <mat-card-title>Créer un nouveau quiz</mat-card-title>
+    <mat-card-title>
+      <div class="title-header">
+        <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Retour">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <span>Créer un nouveau quiz</span>
+      </div>
+    </mat-card-title>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()" class="quiz-form">
         <div class="form-section">

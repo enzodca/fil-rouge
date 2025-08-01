@@ -6,11 +6,18 @@
         <h3>Quiz terminé !</h3>
         <h2>Score : {{ score }} / {{ questions.length }}</h2>
         <p>{{ (score! / questions.length * 100) | number:'1.0-0' }}% de réussite</p>
-        <a routerLink="/quiz-list">
-          <button mat-raised-button class="back-button">
-            <mat-icon>arrow_back</mat-icon> Retour aux quiz
-          </button>
-        </a>
+        <div class="results-actions">
+          <a [routerLink]="['/quiz-leaderboard', quizId]">
+            <button mat-raised-button color="accent" class="leaderboard-button">
+              <mat-icon>emoji_events</mat-icon> Voir le classement
+            </button>
+          </a>
+          <a routerLink="/quiz-list">
+            <button mat-raised-button class="back-button">
+              <mat-icon>arrow_back</mat-icon> Retour aux quiz
+            </button>
+          </a>
+        </div>
       </div>
 
       <div *ngIf="!showResults && currentQuestion" class="question-container">

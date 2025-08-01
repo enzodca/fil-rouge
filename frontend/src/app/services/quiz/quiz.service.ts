@@ -77,4 +77,8 @@ export class QuizService {
   submitQuizAnswers(quizId: string, answers: Record<string, string>): Observable<{ score: number }> {
     return this.http.post<{ score: number }>(`${this.API_URL}/${quizId}/submit`, answers);
   }
+
+  getStats(): Observable<{ totalQuizzes: number; totalUsers: number; totalGamesPlayed: number }> {
+    return this.http.get<{ totalQuizzes: number; totalUsers: number; totalGamesPlayed: number }>(`${this.API_URL}/stats`);
+  }
 }

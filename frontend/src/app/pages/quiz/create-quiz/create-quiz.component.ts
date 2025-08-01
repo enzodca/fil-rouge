@@ -415,4 +415,8 @@ export class CreateQuizComponent implements OnInit, OnDestroy {
     }
     return null;
   }
+
+  goBack(): void {
+    this.router.navigate(['/quiz']);
+  }
 }
