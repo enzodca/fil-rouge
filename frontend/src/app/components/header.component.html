@@ -27,6 +27,10 @@
           <mat-icon>add</mat-icon>
           <span>Créer une organisation</span>
         </button>
+        <button mat-menu-item [routerLink]="['/donation']">
+          <mat-icon>favorite</mat-icon>
+          <span>Faire une donation</span>
+        </button>
 
         <button mat-menu-item *ngIf="auth.isLoggedIn()" (click)="logout()">
           <mat-icon>logout</mat-icon>
@@ -68,6 +72,11 @@
         <div class="username">
           Bonjour, <strong>{{ auth.getUsername() }}</strong>
         </div>
+
+        <button mat-raised-button class="donation-button" [routerLink]="['/donation']" aria-label="Faire une donation">
+          <mat-icon>favorite</mat-icon>
+          Donation
+        </button>
 
         <button mat-raised-button class="logout-button" (click)="logout()" aria-label="Se déconnecter">
           <mat-icon>logout</mat-icon>

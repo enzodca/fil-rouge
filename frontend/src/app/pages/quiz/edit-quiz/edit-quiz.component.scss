@@ -1,6 +1,6 @@
 .edit-quiz-page {
   min-height: calc(100vh - 80px);
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
   position: relative;
   overflow: hidden;
@@ -14,8 +14,8 @@
     bottom: 0;
     background-image: 
       radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
-      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-      radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.06) 3px, transparent 3px);
+      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 3px, transparent 3px);
     background-size: 80px 80px, 60px 60px, 120px 120px;
     animation: particleFloat 30s linear infinite;
   }

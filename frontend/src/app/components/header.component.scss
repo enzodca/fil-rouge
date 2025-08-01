@@ -286,6 +286,33 @@
         }
       }
       
+      .donation-button {
+        background: linear-gradient(135deg, #e91e63, #ad1457) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        min-width: auto !important;
+        
+        &:hover {
+          transform: translateY(-2px) scale(1.05);
+          box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4) !important;
+        }
+        
+        &:active {
+          transform: translateY(0) scale(1.02);
+        }
+        
+        mat-icon {
+          margin-right: 0.25rem;
+          font-size: 16px;
+        }
+      }
+      
       .logout-button {
         background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
         color: white !important;
