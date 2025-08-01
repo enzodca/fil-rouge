@@ -40,6 +40,10 @@
                 </button>
               </a>
               <div class="action-buttons">
+                <button mat-icon-button color="accent" [routerLink]="['/quiz-leaderboard', quiz._id]"
+                    class="action-btn" title="Classement">
+                  <mat-icon>emoji_events</mat-icon>
+                </button>
                 <button mat-icon-button color="accent" *ngIf="quiz.visibility !== 'public' && canDelete(quiz)"
                     (click)="inviteUser(quiz._id)" class="action-btn" title="Inviter">
                   <mat-icon>mail</mat-icon>

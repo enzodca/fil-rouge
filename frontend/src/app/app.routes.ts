@@ -8,6 +8,7 @@ import { CreateQuizComponent } from './pages/quiz/create-quiz/create-quiz.compon
 import { QuizListComponent } from './pages/quiz/quiz-list/quiz-list.component';
 import { PlayQuizComponent } from './pages/quiz/play-quiz/play-quiz.component';
 import { EditQuizComponent } from './pages/quiz/edit-quiz/edit-quiz.component';
+import { QuizLeaderboardComponent } from './pages/quiz/quiz-leaderboard/quiz-leaderboard.component';
 import { CreateOrganizationComponent } from './pages/organization/create-organization/create-organization.component';
 import { OrganizationComponent } from './pages/organization/organization/organization.component';
 import { DonationComponent } from './components/donation/donation.component';
@@ -25,6 +26,7 @@ export const routes: Routes = [
   { path: 'quiz-list', component: QuizListComponent, canActivate: [authGuard] },
   { path: 'play-quiz/:id', component: PlayQuizComponent, canActivate: [authGuard] },
   { path: 'edit-quiz/:id', component: EditQuizComponent, canActivate: [authGuard] },
+  { path: 'quiz-leaderboard/:id', component: QuizLeaderboardComponent, canActivate: [authGuard] },
   { path: 'create-organization', component: CreateOrganizationComponent, canActivate: [authGuard] },
   { path: 'organization/:id', component: OrganizationComponent, canActivate: [authGuard] },
   { path: 'donation', component: DonationComponent, canActivate: [authGuard] },

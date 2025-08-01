@@ -444,6 +444,10 @@ export class EditQuizComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  goBack(): void {
+    this.router.navigate(['/quiz']);
+  }
+
   ngOnDestroy(): void {
     this.audioFiles.forEach((audioData) => {
       URL.revokeObjectURL(audioData.url);

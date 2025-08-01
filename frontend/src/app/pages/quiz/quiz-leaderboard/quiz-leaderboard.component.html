@@ -1,0 +1,139 @@
+<div class="leaderboard-wrapper">
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+    <p>Chargement du classement...</p>
+  </div>
+
+  <div *ngIf="!loading" class="leaderboard-container">
+    <div class="quiz-header">
+      <button mat-icon-button (click)="goBackToQuiz()" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="quiz-info">
+        <h1 class="quiz-title">{{ quiz?.title }}</h1>
+        <p class="quiz-description" *ngIf="quiz?.description">{{ quiz?.description }}</p>
+        <div class="participants-info">
+          <mat-icon>people</mat-icon>
+          <span>{{ totalParticipants }} participant{{ totalParticipants > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+      <button mat-raised-button color="primary" (click)="playQuiz()" class="play-again-button">
+        <mat-icon>play_arrow</mat-icon>
+        Jouer
+      </button>
+    </div>
+
+    <div class="leaderboard-title">
+      <mat-icon>emoji_events</mat-icon>
+      <h2>Classement</h2>
+      <mat-icon>emoji_events</mat-icon>
+    </div>
+
+    <div *ngIf="leaderboard.length === 0" class="no-participants">
+      <mat-icon>sentiment_dissatisfied</mat-icon>
+      <h3>Aucun participant pour le moment</h3>
+      <p>Soyez le premier à jouer ce quiz !</p>
+      <button mat-raised-button color="primary" (click)="playQuiz()">
+        <mat-icon>play_arrow</mat-icon>
+        Commencer le quiz
+      </button>
+    </div>
+
+    <div *ngIf="leaderboard.length > 0" class="podium">
+      <div *ngIf="leaderboard.length > 1" class="podium-position second">
+        <div class="podium-card silver">
+          <div class="position-number">2</div>
+          <mat-icon class="trophy-icon">emoji_events</mat-icon>
+          <div class="player-info">
+            <h3>{{ leaderboard[1].username }}</h3>
+            <div class="score">{{ leaderboard[1].score }}/{{ leaderboard[1].total_questions }}</div>
+            <div class="percentage">{{ leaderboard[1].percentage }}%</div>
+            <div class="time">{{ formatTime(leaderboard[1].time_taken) }}</div>
+          </div>
+        </div>
+        <div class="podium-base silver-base"></div>
+      </div>
+
+      <div class="podium-position first">
+        <div class="podium-card gold">
+          <div class="position-number">1</div>
+          <mat-icon class="trophy-icon">emoji_events</mat-icon>
+          <div class="player-info">
+            <h3>{{ leaderboard[0].username }}</h3>
+            <div class="score">{{ leaderboard[0].score }}/{{ leaderboard[0].total_questions }}</div>
+            <div class="percentage">{{ leaderboard[0].percentage }}%</div>
+            <div class="time">{{ formatTime(leaderboard[0].time_taken) }}</div>
+          </div>
+        </div>
+        <div class="podium-base gold-base"></div>
+      </div>
+
+      <div *ngIf="leaderboard.length > 2" class="podium-position third">
+        <div class="podium-card bronze">
+          <div class="position-number">3</div>
+          <mat-icon class="trophy-icon">emoji_events</mat-icon>
+          <div class="player-info">
+            <h3>{{ leaderboard[2].username }}</h3>
+            <div class="score">{{ leaderboard[2].score }}/{{ leaderboard[2].total_questions }}</div>
+            <div class="percentage">{{ leaderboard[2].percentage }}%</div>
+            <div class="time">{{ formatTime(leaderboard[2].time_taken) }}</div>
+          </div>
+        </div>
+        <div class="podium-base bronze-base"></div>
+      </div>
+    </div>
+
+    <div *ngIf="leaderboard.length > 0" class="full-leaderboard">
+      <h3>Classement complet</h3>
+      <div class="leaderboard-table">
+        <div class="table-header">
+          <div class="rank-col">Rang</div>
+          <div class="player-col">Joueur</div>
+          <div class="score-col">Score</div>
+          <div class="percentage-col">%</div>
+          <div class="time-col">Temps</div>
+          <div class="date-col">Date</div>
+        </div>
+
+        <div 
+          *ngFor="let entry of leaderboard; let i = index" 
+          class="table-row"
+          [class.top-three]="i < 3">
+          <div class="rank-col">
+            <div class="rank-wrapper" [ngClass]="getPositionClass(entry.position)">
+              <mat-icon *ngIf="i < 3">{{ getPositionIcon(entry.position) }}</mat-icon>
+              <span *ngIf="i >= 3">{{ entry.position }}</span>
+            </div>
+          </div>
+          <div class="player-col">
+            <div class="player-info">
+              <mat-icon>person</mat-icon>
+              <span class="username">{{ entry.username }}</span>
+            </div>
+          </div>
+          <div class="score-col">
+            <div class="score-display">
+              <span class="score-numbers">{{ entry.score }}/{{ entry.total_questions }}</span>
+            </div>
+          </div>
+          <div class="percentage-col">
+            <div class="percentage-display" [ngClass]="{'perfect': entry.percentage === 100, 'good': entry.percentage >= 80, 'average': entry.percentage >= 60}">
+              {{ entry.percentage }}%
+            </div>
+          </div>
+          <div class="time-col">
+            <div class="time-display">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ formatTime(entry.time_taken) }}</span>
+            </div>
+          </div>
+          <div class="date-col">
+            <div class="date-display">
+              {{ formatDate(entry.completed_at) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

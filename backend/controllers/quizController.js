@@ -1,6 +1,7 @@
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Answer = require('../models/Answer');
+const QuizResult = require('../models/QuizResult');
 
 exports.createQuiz = async (req, res) => {
   const { title, description, questions, visibility, allowed_emails, has_timer } = req.body;
@@ -196,5 +197,78 @@ exports.updateQuiz = async (req, res) => {
     res.json({ message: 'Quiz mis à jour avec succès' });
   } catch (err) {
     res.status(500).json({ message: 'Erreur update', error: err.message });
+  }
+};
+
+exports.submitQuizResult = async (req, res) => {
+  const { quizId, score, totalQuestions, timeTaken } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const existingResult = await QuizResult.findOne({ 
+      quiz_id: quizId, 
+      user_id: userId 
+    });
+
+    const isFirstAttempt = !existingResult;
+
+    const result = await QuizResult.create({
+      quiz_id: quizId,
+      user_id: userId,
+      score,
+      total_questions: totalQuestions,
+      time_taken: timeTaken || 0,
+      is_first_attempt: isFirstAttempt
+    });
+
+    res.status(201).json({ 
+      message: 'Résultat enregistré',
+      resultId: result._id,
+      isFirstAttempt
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Erreur lors de l\'enregistrement', error: err.message });
+  }
+};
+
+exports.getQuizLeaderboard = async (req, res) => {
+  const quizId = req.params.id;
+
+  try {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz non trouvé' });
+    }
+
+    const leaderboard = await QuizResult.find({ 
+      quiz_id: quizId, 
+      is_first_attempt: true 
+    })
+    .populate('user_id', 'username email')
+    .sort({ score: -1, time_taken: 1 })
+    .exec();
+
+    const results = leaderboard.map((result, index) => ({
+      position: index + 1,
+      username: result.user_id.username,
+      email: result.user_id.email,
+      score: result.score,
+      total_questions: result.total_questions,
+      percentage: Math.round((result.score / result.total_questions) * 100),
+      time_taken: result.time_taken,
+      completed_at: result.completed_at
+    }));
+
+    res.json({
+      quiz: {
+        _id: quiz._id,
+        title: quiz.title,
+        description: quiz.description
+      },
+      leaderboard: results,
+      total_participants: results.length
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Erreur lors de la récupération du classement', error: err.message });
   }
 };
