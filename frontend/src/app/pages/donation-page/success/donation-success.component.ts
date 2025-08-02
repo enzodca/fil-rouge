@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { SharedModule } from '../../shared/shared.module';
+import { SharedModule } from '../../../shared/shared.module';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StripeService } from '../../services/stripe/stripe.service';
+import { StripeService } from '../../../services/stripe/stripe.service';
 
 @Component({
   selector: 'app-donation-success',

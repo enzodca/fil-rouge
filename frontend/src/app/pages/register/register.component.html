@@ -15,6 +15,12 @@
             <mat-error *ngIf="form.get('username')?.hasError('minlength')">
               Le nom d'utilisateur doit contenir au moins 3 caractères
             </mat-error>
+            <mat-error *ngIf="form.get('username')?.hasError('maxlength')">
+              Le nom d'utilisateur ne peut pas dépasser 20 caractères
+            </mat-error>
+            <mat-error *ngIf="form.get('username')?.hasError('pattern')">
+              Le nom d'utilisateur ne peut contenir que des lettres, chiffres et tirets bas
+            </mat-error>
           </mat-form-field>
         </div>
 
@@ -37,20 +43,63 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mot de passe</mat-label>
             <mat-icon matPrefix>lock</mat-icon>
-            <input matInput type="password" formControlName="password" required autocomplete="new-password"
+            <input matInput [type]="passwordVisible ? 'text' : 'password'" formControlName="password" required autocomplete="new-password"
               placeholder="••••••••" />
+            <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
+              <mat-icon>{{ passwordVisible ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
             <mat-error *ngIf="form.get('password')?.hasError('required')">
               Le mot de passe est requis
             </mat-error>
             <mat-error *ngIf="form.get('password')?.hasError('minlength')">
-              Le mot de passe doit contenir au moins 6 caractères
+              Le mot de passe doit contenir au moins 8 caractères
+            </mat-error>
+            <mat-error *ngIf="form.get('password')?.hasError('passwordStrength')">
+              Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial
+            </mat-error>
+          </mat-form-field>
+
+          <div class="password-strength" *ngIf="form.get('password')?.value">
+            <div class="strength-bar">
+              <div [class]="getPasswordStrengthClass()"></div>
+            </div>
+            <span class="strength-text">{{ getPasswordStrengthText() }}</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirmer le mot de passe</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput [type]="confirmPasswordVisible ? 'text' : 'password'" formControlName="confirmPassword" required 
+              placeholder="••••••••" />
+            <button mat-icon-button matSuffix (click)="toggleConfirmPasswordVisibility()" type="button">
+              <mat-icon>{{ confirmPasswordVisible ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="form.get('confirmPassword')?.hasError('required')">
+              La confirmation du mot de passe est requise
+            </mat-error>
+            <mat-error *ngIf="form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched">
+              Les mots de passe ne correspondent pas
             </mat-error>
           </mat-form-field>
         </div>
 
-        <button mat-raised-button type="submit" class="submit-button full-width" [disabled]="form.invalid">
-          <mat-icon>person_add</mat-icon>
-          Créer mon compte
+        <div class="form-field">
+          <mat-checkbox formControlName="terms" class="terms-checkbox">
+            J'accepte les <a href="/terms" target="_blank">conditions d'utilisation</a> et la 
+            <a href="/privacy" target="_blank">politique de confidentialité</a>
+          </mat-checkbox>
+          <mat-error *ngIf="form.get('terms')?.hasError('required') && form.get('terms')?.touched" class="terms-error">
+            Vous devez accepter les conditions pour continuer
+          </mat-error>
+        </div>
+
+        <button mat-raised-button type="submit" class="submit-button full-width" 
+                [disabled]="form.invalid || isLoading">
+          <mat-spinner diameter="20" *ngIf="isLoading" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!isLoading">person_add</mat-icon>
+          {{ isLoading ? 'Création en cours...' : 'Créer mon compte' }}
         </button>
       </form>
 

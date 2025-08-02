@@ -12,14 +12,16 @@ import { QuizLeaderboardComponent } from './pages/quiz/quiz-leaderboard/quiz-lea
 import { CreateOrganizationComponent } from './pages/organization/create-organization/create-organization.component';
 import { OrganizationComponent } from './pages/organization/organization/organization.component';
 import { DonationComponent } from './components/donation/donation.component';
-import { DonationSuccessComponent } from './pages/donation-page/donation-success.component';
-import { DonationCancelComponent } from './pages/donation-page/donation-cancel.component';
+import { DonationSuccessComponent } from './pages/donation-page/success/donation-success.component';
+import { DonationCancelComponent } from './pages/donation-page/cancel/donation-cancel.component';
+import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 
 
 
 export const routes: Routes = [
   { path: "login", component: LoginComponent, canActivate: [guestGuard] },
   { path: "register", component: RegisterComponent, canActivate: [guestGuard] },
+  { path: "verify-email", component: VerifyEmailComponent },
 
   { path: "accueil", component: AccueilComponent, canActivate: [authGuard] },
   { path: 'create-quiz', component: CreateQuizComponent, canActivate: [authGuard] },

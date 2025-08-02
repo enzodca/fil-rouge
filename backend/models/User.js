@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
   role:     { type: String, default: 'user' },
   organization_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
   organization_role: { type: String, enum: ['chef', 'membre'] },
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
   created_at: { type: Date, default: Date.now }
 });
 
