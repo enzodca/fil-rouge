@@ -31,6 +31,14 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/register`, data);
   }
 
+  verifyEmail(token: string) {
+    return this.http.get<any>(`${this.API_URL}/verify-email?token=${token}`);
+  }
+
+  resendVerificationEmail(email: string) {
+    return this.http.post<any>(`${this.API_URL}/resend-verification`, { email });
+  }
+
   login(data: { email: string; password: string }) {
     return this.http.post<{ token: string }>(`${this.API_URL}/login`, data).pipe(
       tap(res => {

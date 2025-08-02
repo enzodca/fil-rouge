@@ -1,0 +1,57 @@
+<div class="verify-email-container">
+  <mat-card class="verify-card">
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-section">
+        <mat-spinner diameter="50"></mat-spinner>
+        <h2>Vérification en cours...</h2>
+        <p>Veuillez patienter pendant que nous vérifions votre e-mail.</p>
+      </div>
+
+      <div *ngIf="isSuccess" class="success-section">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <h2>E-mail vérifié !</h2>
+        <p>{{ message }}</p>
+        <p class="redirect-info">Redirection vers la page de connexion dans quelques secondes...</p>
+        
+        <div class="actions">
+          <button mat-raised-button color="primary" (click)="goToLogin()">
+            <mat-icon>login</mat-icon>
+            Se connecter maintenant
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="isError" class="error-section">
+        <mat-icon class="error-icon">error</mat-icon>
+        <h2>Erreur de vérification</h2>
+        <p>{{ message }}</p>
+        
+        <div class="resend-section">
+          <h3>Renvoyer l'e-mail de vérification</h3>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Votre adresse e-mail</mat-label>
+            <mat-icon matPrefix>email</mat-icon>
+            <input matInput type="email" [(ngModel)]="email" placeholder="votre@email.com">
+          </mat-form-field>
+          
+          <button mat-raised-button color="accent" (click)="resendVerificationEmail()" class="resend-button">
+            <mat-icon>send</mat-icon>
+            Renvoyer l'e-mail
+          </button>
+        </div>
+        
+        <div class="actions">
+          <button mat-stroked-button (click)="goToRegister()">
+            <mat-icon>person_add</mat-icon>
+            Créer un nouveau compte
+          </button>
+          
+          <button mat-stroked-button (click)="goToLogin()">
+            <mat-icon>login</mat-icon>
+            Se connecter
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

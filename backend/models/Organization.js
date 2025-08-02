@@ -22,7 +22,6 @@ const organizationSchema = new mongoose.Schema({
 });
 
 
-organizationSchema.index({ name: 1 });
 organizationSchema.index({ members: 1 });
 
 module.exports = mongoose.model('Organization', organizationSchema);

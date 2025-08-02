@@ -2,6 +2,17 @@
   <mat-card class="login-card">
     <mat-card-title class="login-title">Connexion</mat-card-title>
     <mat-card-content>
+      <div *ngIf="verificationMessage" class="verification-info">
+        <mat-card class="info-card">
+          <mat-card-content>
+            <div class="info-content">
+              <mat-icon class="info-icon">info</mat-icon>
+              <p>{{ verificationMessage }}</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
         <div class="form-field">
           <mat-form-field appearance="outline" class="full-width">
@@ -30,11 +41,29 @@
           </mat-form-field>
         </div>
 
-        <button mat-raised-button type="submit" class="submit-button full-width" [disabled]="form.invalid">
-          <mat-icon>login</mat-icon>
-          Se connecter
+        <button mat-raised-button type="submit" class="submit-button full-width" 
+                [disabled]="form.invalid || isLoading">
+          <mat-spinner diameter="20" *ngIf="isLoading" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!isLoading">login</mat-icon>
+          {{ isLoading ? 'Connexion...' : 'Se connecter' }}
         </button>
       </form>
+
+      <div *ngIf="showResendEmail" class="resend-email-section">
+        <mat-card class="resend-card">
+          <mat-card-content>
+            <div class="resend-content">
+              <mat-icon class="warning-icon">email</mat-icon>
+              <h3>E-mail non vérifié</h3>
+              <p>Vous devez vérifier votre adresse e-mail avant de pouvoir vous connecter.</p>
+              <button mat-stroked-button color="accent" (click)="resendVerificationEmail()" class="resend-button">
+                <mat-icon>send</mat-icon>
+                Renvoyer l'e-mail de vérification
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
 
       <div class="register-section">
         <p class="register-text">Vous n'avez pas encore de compte ?</p>
