@@ -9,7 +9,7 @@ import { SharedModule } from '../../shared/shared.module';
   selector: 'app-login',
   imports: [SharedModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
   form: FormGroup;

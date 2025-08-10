@@ -1,164 +1,176 @@
-# fil-rouge
-
-
 # QUIZZ GAME MNS
 
-**Application de QCM personnalisés en mode SAAS**
-
-Projet DFS 2024-2025
-
-Développé par Enzo Da Cunha Alves
+Plateforme SaaS de QCM personnalisés — Front Angular, API Node/Express, MongoDB, packagée avec Docker.
 
 ---
 
-## 📜 Présentation du projet
+## Vue d’ensemble
 
-QUIZZ GAME MNS est une plateforme SaaS de création et de gestion de quiz interactifs pour évaluer les compétences des collaborateurs et dynamiser les formations, séminaires ou processus RH.
-
-Elle repose sur une forte orientation **gamification** (classements, badges, scores) et s'adapte à tout type d'organisation.
-
-- **Scalable**, **sécurisé** (RGPD), **éco-conçu**
-- Déploiement en containers Docker
-- Architecture MVC Node.js + Angular + MongoDB
+- Création/gestion d’organisations, utilisateurs, quiz et questions
+- Authentification JWT, validation, protections OWASP (helmet, rate limit, hpp, xss)
+- Paiement Stripe (donations), envoi email (Nodemailer)
+- Tests unitaires et d’intégration avec Jest + Supertest + Mongo Memory Server
 
 ---
 
-## 🚀 Fonctionnalités principales
+## Architecture
 
-* 🔹 Création de comptes utilisateurs et organisations
-* 🔹 Gestion de profils, badges et avatars
-* 🔹 Création de quiz publics/privés et de questions variées :
-  * QCM
-  * Ordre
-  * Associations (gauche/droite)
-  * Chercher l'intrus
-  * Blind test
-* 🔹 Système de notation et de classement en temps réel
-* 🔹 Jeu en solo ou en équipe
-* 🔹 Responsive Design pour une utilisation mobile
-* 🔹 Historique de participation et export des données
+- frontend: Angular 19 servi par Nginx en container
+- backend: Node.js/Express (MVC) + Mongoose
+- mongo: base de données MongoDB (container) ou Atlas
+- Orchestration: docker-compose
 
----
+Arborescence (extrait):
 
-## 🛠️ Stack technique
-
-| Front-end | Back-end             | Base de données | Authentification | Orchestration       |
-| :-------- | :------------------- | :--------------- | :--------------- | :------------------ |
-| Angular   | Node.js (Express.js) | MongoDB          | JWT              | Docker / Kubernetes |
-
-**Technologies complémentaires :**
-- **Nginx** pour le reverse proxy
-- **Elastic Stack (ELK)** pour la gestion des logs
-- **CI/CD** avec **GitHub Actions** ou **GitLab CI**
-
----
-
-## 🧹 Modélisation de la base de données
-
-- **users** : gestion des utilisateurs
-- **quizzes** : gestion des quiz
-- **questions** : gestion des questions liées aux quiz
-- **answers** : réponses possibles par question
-- **scores** : historique des résultats
-- **rankings** : classement général
-
----
-
-## 🎯 Objectifs SMART
-
-- Atteindre 100 utilisateurs actifs sous 3 mois après lancement
-- 50 quiz créés dans les 2 premiers mois
-- Temps de réponse moyen par question < 30 secondes
-- Taux d’adoption cible de 70 % au sein d'une entreprise cliente
-
----
-
-## 📈 Architecture logicielle
-
-* **Modèle MVC** pour une meilleure séparation des responsabilités
-* **API REST** sécurisée en Node.js
-* **JWT** pour l'authentification et la gestion des sessions
-* **MongoDB** hébergé via MongoDB Atlas ou en container Docker
-* **Déploiement scalable** (local via Docker Compose, production via Kubernetes)
-
----
-
-## ♻️ Normes et standards respectés
-
-* **RGPD** : Anonymisation et sécurisation des données sensibles
-* **Accessibilité** : Conformité RG2A / WCAG 2.1
-* **Éco-conception** : Optimisation des requêtes, compression des fichiers statiques, hébergement green IT
-* **Sécurité** : Suivi des bonnes pratiques OWASP
-* **Qualité** : Respect des standards HTML5, CSS3, JS modernes
-
----
-
-## 🛡️ Sécurité et conformité
-
-* Stockage sécurisé des mots de passe (bcrypt)
-* Gestion sécurisée des tokens d’authentification
-* Analyse d'impact sur la protection des données (PIA)
-* Surveillance via Elastic Stack pour les erreurs et incidents
-* Respect des standards ISO 27001, ISO 9001
-
----
-
-## 🗓️ Organisation de projet
-
-* **Méthodologie** : Agile (Scrum)
-* **Sprints** : 2 à 3 semaines
-* **Outils de gestion** : GitHub Projects / GitLab Issues
-* **Diagramme de Gantt** : Suivi prévisionnel et analyse des écarts
-
----
-
-## 📚 Documentation
-
-* Cahier des charges et spécifications fonctionnelles
-* Dossier de modélisation & Lot 1
-
----
-
-## 👤 Auteur
-
-**Enzo Da Cunha Alves**  
-*Développeur fullstack, Chef de projet, UX/UI Designer, DevOps*
-
----
-
-
-## 🔥 Démarrage rapide (local)
-
-Avant de démarrer, veillez à créer les fichiers `.env` suivants :
-
-- **À la racine du projet** :  
-  Créez un fichier `.env` contenant les variables d'environnement pour MongoDB (exemple fourni dans le dépôt).
-
-- **Dans le dossier `backend`** :  
-  Créez un fichier `.env` pour les variables d'environnement spécifiques à l'API (JWT_SECRET, configuration de la base, etc.).
-
-```bash
-# Cloner le projet
-git clone https://github.com/your-username/quizz-game-mns.git
-
-# Backend Setup
-cd backend
-npm install
-
-# Frontend Setup
-cd ../frontend
-npm install
-
-# Revenir à la racine du projet
-cd ..
-
-# Lancer les containers Docker
-docker-compose up --build
-
-# Accéder à l'application
-http://localhost
+```
+backend/          # API Express, tests Jest
+frontend/         # Application Angular + Nginx
+docker-compose.yml
 ```
 
 ---
 
-**Enjoy the game! 🌟**
+## Prérequis
+
+- Node.js 18+ et npm (pour dev local)
+- Docker Desktop (Windows/macOS/Linux) et Docker Compose
+- Clés Stripe (test) si vous activez les paiements
+- Compte email (ex: Gmail) si vous activez l’envoi de mails
+
+---
+
+## Configuration des variables d’environnement
+
+1) À la racine du projet, créez un fichier `.env` (utilisé par docker-compose pour le service `mongo`):
+
+```
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=example
+```
+
+2) Dans `backend/.env`, copiez/adapter depuis `backend/.env.example`:
+
+```
+PORT=3000
+
+# Connexion Mongo (container local)
+MONGO_URI=mongodb://root:example@mongo:27017/quizzgame?authSource=admin
+
+# Option Atlas (si vous n’utilisez pas le container)
+MONGO_URI_ATLAS=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/
+
+# Auth
+JWT_SECRET=your_jwt_secret
+
+# Stripe
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
+# Email
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_email_password
+
+# Frontend URLs
+FRONTEND_URL_LOCAL=http://localhost:4200
+FRONTEND_URL_PRODUCTION=https://your-production-domain.com
+```
+
+Remarque: le fichier `.env` racine est distinct de `backend/.env`. Le premier alimente le container Mongo; le second configure l’API.
+
+---
+
+## Démarrage rapide
+
+### Option A — Docker (recommandé)
+
+1) Créez les fichiers `.env` décrits ci-dessus
+2) À la racine du projet, lancez:
+
+```bash
+docker-compose up --build
+```
+
+Accès:
+- Frontend: http://localhost:4200
+- Backend: http://localhost:3000 (ex: /api/health)
+- MongoDB: localhost:27017
+
+Arrêt des containers: `Ctrl + C` puis `docker-compose down` si besoin.
+
+### Option B — Développement local (sans Docker)
+
+Backend:
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Frontend:
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Assurez-vous que `backend/.env` pointe vers une base Mongo joignable (locale ou Atlas). Par défaut, l’API écoute sur le port 3000 et le front sur 4200.
+
+---
+
+## Scripts utiles
+
+Backend (`backend/package.json`):
+- `npm run dev` — démarre l’API avec nodemon
+- `npm start` — démarre l’API en production
+- `npm test` — lance Jest (runInBand)
+- `npm run test:watch` — mode watch
+- `npm run test:coverage` — couverture de tests
+
+Frontend (`frontend/package.json`):
+- `npm start` — `ng serve`
+- `npm run build` — build prod vers `dist`
+- `npm test` — tests Angular/Karma
+
+---
+
+## Tests backend
+
+La suite Jest couvre middlewares (auth, sécurité, validation, logger), modèles (User, Organization, Quiz, Question, Answer, QuizResult), services (email), routes/contrôleurs (auth, organization, quiz, stripe) et serveur (/api/health, 404).
+
+Exécution:
+
+```bash
+cd backend
+npm install
+npm test
+```
+
+Modes:
+- Watch: `npm run test:watch`
+- Couverture: `npm run test:coverage` (rapports dans `backend/coverage`)
+
+---
+
+## Sécurité
+
+- Headers et protections: helmet, hpp, xss, CORS, rate limit
+- Auth: JWT (bcrypt pour les mots de passe)
+- Logs sécurité et validation centralisée
+
+---
+
+## Déploiement
+
+- Images Docker pour front (Nginx) et back (Node)
+- Variables d’environnement via fichiers `.env`
+- Remplacez `MONGO_URI` par votre URI Atlas en production si nécessaire
+
+---
+
+## Aide & contributions
+
+Issues et PR bienvenues. Merci de décrire clairement le contexte, les étapes de repro et l’impact.
+
+—
+
+Enjoy the game ✨

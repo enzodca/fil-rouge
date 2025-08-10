@@ -36,7 +36,10 @@ class EmailService {
   }
 
   async sendVerificationEmail(email, username, verificationToken) {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL_PRODUCTION 
+      : process.env.FRONTEND_URL_LOCAL;
+    const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -97,6 +100,10 @@ class EmailService {
   }
 
   async sendWelcomeEmail(email, username) {
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL_PRODUCTION 
+      : process.env.FRONTEND_URL_LOCAL;
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -115,7 +122,7 @@ class EmailService {
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL}/login" 
+              <a href="${frontendUrl}/login" 
                  style="background: linear-gradient(135deg, #48dbfb, #0abde3); 
                         color: white; 
                         padding: 15px 30px; 

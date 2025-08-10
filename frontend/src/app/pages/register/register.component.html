@@ -87,8 +87,8 @@
 
         <div class="form-field">
           <mat-checkbox formControlName="terms" class="terms-checkbox">
-            J'accepte les <a href="/terms" target="_blank">conditions d'utilisation</a> et la 
-            <a href="/privacy" target="_blank">politique de confidentialité</a>
+            J'accepte les <a routerLink="/terms">conditions d'utilisation</a> et la 
+            <a routerLink="/privacy">politique de confidentialité</a>
           </mat-checkbox>
           <mat-error *ngIf="form.get('terms')?.hasError('required') && form.get('terms')?.touched" class="terms-error">
             Vous devez accepter les conditions pour continuer

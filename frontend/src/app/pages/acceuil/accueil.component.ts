@@ -9,7 +9,7 @@ import { QuizService } from '../../services/quiz/quiz.service';
   selector: 'app-accueil',
   imports: [SharedModule],
   templateUrl: './accueil.component.html',
-  styleUrl: './accueil.component.scss'
+  styleUrls: ['./accueil.component.scss']
 })
 export class AccueilComponent implements OnInit {
   user: any = null;

@@ -12,6 +12,9 @@ logs/
 # Environment variables
 .env
 
+# Test coverage
+coverage/
+
 # Docker
 docker-compose.override.yml
 docker-compose.override.yaml

@@ -9,7 +9,7 @@ import { SharedModule } from '../../shared/shared.module';
   selector: 'app-register',
   imports: [SharedModule],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent {
   form: FormGroup;
