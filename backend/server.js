@@ -24,8 +24,8 @@ const app = express();
 
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL] 
-    : ['http://localhost:4200', 'http://127.0.0.1:4200'],
+    ? [process.env.FRONTEND_URL_PRODUCTION] 
+    : [process.env.FRONTEND_URL_LOCAL, 'http://127.0.0.1:4200'],
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -36,7 +36,9 @@ const corsOptions = {
 app.use(helmetConfig);
 app.use(compression());
 app.use(cors(corsOptions));
-app.use(generalLimiter);
+if (process.env.NODE_ENV !== 'test') {
+  app.use(generalLimiter);
+}
 app.use(logger.accessMiddleware());
 app.use(logger.suspiciousActivityMiddleware());
 app.use(securityLogger);
@@ -76,23 +78,29 @@ const mongoOptions = {
   autoIndex: process.env.NODE_ENV !== 'production'
 };
 
-mongoose.connect(process.env.MONGO_URI, mongoOptions)
-  .then(() => {
-    console.log('✓ MongoDB connecté avec succès');
-    logger.log('INFO', 'Base de données connectée', {
-      environment: process.env.NODE_ENV || 'development'
+const mongoURI = process.env.NODE_ENV === 'production' 
+  ? process.env.MONGO_URI_ATLAS 
+  : process.env.MONGO_URI;
+
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(mongoURI, mongoOptions)
+    .then(() => {
+      console.log('✓ MongoDB connecté avec succès');
+      logger.log('INFO', 'Base de données connectée', {
+        environment: process.env.NODE_ENV || 'development'
+      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✓ Mode développement activé');
+      }
+    })
+    .catch(err => {
+      console.error('✗ Erreur de connexion MongoDB:', err.message);
+      logger.alert('Échec de connexion à la base de données', {
+        error: err.message
+      });
+      process.exit(1);
     });
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✓ Mode développement activé');
-    }
-  })
-  .catch(err => {
-    console.error('✗ Erreur de connexion MongoDB:', err.message);
-    logger.alert('Échec de connexion à la base de données', {
-      error: err.message
-    });
-    process.exit(1);
-  });
+}
 
 mongoose.connection.on('error', (err) => {
   console.error('Erreur MongoDB:', err);
@@ -165,20 +173,32 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
-  console.log(`🔒 Sécurité activée: ${process.env.NODE_ENV === 'production' ? 'Production' : 'Développement'}`);
-  
-  logger.log('INFO', 'Serveur démarré', {
-    port: PORT,
-    environment: process.env.NODE_ENV || 'development',
-    securityMode: process.env.NODE_ENV === 'production' ? 'Production' : 'Développement'
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    console.log(`🚀 Serveur lancé sur le port ${PORT}`);
+    console.log(`🔒 Sécurité activée: ${process.env.NODE_ENV === 'production' ? 'Production' : 'Développement'}`);
+    
+    logger.log('INFO', 'Serveur démarré', {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      securityMode: process.env.NODE_ENV === 'production' ? 'Production' : 'Développement'
+    });
   });
-});
+}
 
 const gracefulShutdown = (signal) => {
   console.log(`${signal} reçu, arrêt du serveur...`);
   logger.log('INFO', `Arrêt du serveur (${signal})`);
+  if (typeof logger.stopCleanup === 'function') {
+    logger.stopCleanup();
+  }
+  try {
+    const authController = require('./controllers/authController');
+    if (typeof authController.stopLoginAttemptsCleanup === 'function') {
+      authController.stopLoginAttemptsCleanup();
+    }
+  } catch (_) {}
   
   server.close(() => {
     console.log('Serveur arrêté');
@@ -190,22 +210,26 @@ const gracefulShutdown = (signal) => {
   });
 };
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+if (process.env.NODE_ENV !== 'test') {
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-process.on('uncaughtException', (err) => {
-  console.error('Exception non capturée:', err);
-  logger.alert('Exception non capturée', {
-    error: err.message,
-    stack: err.stack
+  process.on('uncaughtException', (err) => {
+    console.error('Exception non capturée:', err);
+    logger.alert('Exception non capturée', {
+      error: err.message,
+      stack: err.stack
+    });
+    process.exit(1);
   });
-  process.exit(1);
-});
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Promesse rejetée non gérée:', reason);
-  logger.alert('Promesse rejetée non gérée', {
-    reason: reason.toString(),
-    promise: promise.toString()
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Promesse rejetée non gérée:', reason);
+    logger.alert('Promesse rejetée non gérée', {
+      reason: reason.toString(),
+      promise: promise.toString()
+    });
   });
-});
+}
+
+module.exports = app;

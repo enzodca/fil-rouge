@@ -8,7 +8,7 @@ import { SharedModule } from '../../shared/shared.module';
   selector: 'app-verify-email',
   imports: [SharedModule],
   templateUrl: './verify-email.component.html',
-  styleUrl: './verify-email.component.scss'
+  styleUrls: ['./verify-email.component.scss']
 })
 export class VerifyEmailComponent implements OnInit {
   isLoading = true;

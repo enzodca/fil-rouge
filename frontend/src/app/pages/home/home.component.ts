@@ -5,7 +5,7 @@ import { SharedModule } from '../../shared/shared.module';
   selector: 'app-home',
   imports: [SharedModule],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
 

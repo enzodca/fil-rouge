@@ -11,6 +11,7 @@ class SecurityLogger {
     this.securityLogFile = path.join(logsDir, 'security.log');
     this.authLogFile = path.join(logsDir, 'auth.log');
     this.accessLogFile = path.join(logsDir, 'access.log');
+    this._cleanupIntervalId = null;
   }
 
   log(level, message, data = {}, logFile = null) {
@@ -49,6 +50,26 @@ class SecurityLogger {
 
     if (process.env.NODE_ENV === 'production') {
       console.error(`🚨 ALERTE SÉCURITÉ: ${message}`, data);
+    }
+  }
+
+  startCleanup() {
+    if (this._cleanupIntervalId) return;
+    this._cleanupIntervalId = setInterval(() => {
+      try {
+        this.cleanupOldLogs();
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'test') {
+          console.error('Erreur lors du nettoyage des logs:', e.message);
+        }
+      }
+    }, 24 * 60 * 60 * 1000);
+  }
+
+  stopCleanup() {
+    if (this._cleanupIntervalId) {
+      clearInterval(this._cleanupIntervalId);
+      this._cleanupIntervalId = null;
     }
   }
 
@@ -198,8 +219,8 @@ class SecurityLogger {
 
 const logger = new SecurityLogger();
 
-setInterval(() => {
-  logger.cleanupOldLogs();
-}, 24 * 60 * 60 * 1000);
+if (process.env.NODE_ENV !== 'test') {
+  logger.startCleanup();
+}
 
 module.exports = logger;

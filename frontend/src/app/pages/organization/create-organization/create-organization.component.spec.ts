@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { CreateOrganizationComponent } from './create-organization.component';
 
 describe('CreateOrganizationComponent', () => {
@@ -8,7 +9,7 @@ describe('CreateOrganizationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateOrganizationComponent]
+      imports: [CreateOrganizationComponent, HttpClientTestingModule, RouterTestingModule]
     })
     .compileComponents();
 

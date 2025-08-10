@@ -5,6 +5,7 @@ const User = require('../models/User');
 const emailService = require('../services/emailService');
 
 const loginAttempts = new Map();
+let _loginCleanupIntervalId = null;
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60 * 1000;
 
@@ -327,14 +328,31 @@ exports.getMe = async (req, res) => {
   }
 };
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, attempts] of loginAttempts.entries()) {
-    if (now - attempts.lastAttempt > LOCKOUT_TIME) {
-      loginAttempts.delete(key);
+function startLoginAttemptsCleanup() {
+  if (_loginCleanupIntervalId) return;
+  _loginCleanupIntervalId = setInterval(() => {
+    const now = Date.now();
+    for (const [key, attempts] of loginAttempts.entries()) {
+      if (now - attempts.lastAttempt > LOCKOUT_TIME) {
+        loginAttempts.delete(key);
+      }
     }
+  }, 5 * 60 * 1000);
+}
+
+function stopLoginAttemptsCleanup() {
+  if (_loginCleanupIntervalId) {
+    clearInterval(_loginCleanupIntervalId);
+    _loginCleanupIntervalId = null;
   }
-}, 5 * 60 * 1000);
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  startLoginAttemptsCleanup();
+}
+
+exports.startLoginAttemptsCleanup = startLoginAttemptsCleanup;
+exports.stopLoginAttemptsCleanup = stopLoginAttemptsCleanup;
 
 exports.logout = async (req, res) => {
   try {
