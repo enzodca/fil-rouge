@@ -34,10 +34,11 @@ jobs:
 
       - name: Build Angular (production)
         working-directory: frontend
-        run: npm run build -- --configuration production
+        run: npm run build
 
       - name: Compute publish directory
         id: pub
+        working-directory: frontend
         run: |
           DIST=${{ steps.detect.outputs.distPath }}
           if [ -d "$DIST/browser" ]; then echo publishDir=$DIST/browser >> $GITHUB_OUTPUT; else echo publishDir=$DIST >> $GITHUB_OUTPUT; fi
@@ -46,6 +47,7 @@ jobs:
         run: npm install -g netlify-cli
 
       - name: Deploy to Netlify
+        working-directory: frontend
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
