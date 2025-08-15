@@ -35,7 +35,7 @@ describe('AuthService', () => {
   it('login stocke le token dans localStorage', () => {
     const creds = { email: 'a@a.com', password: 'x' };
     service.login(creds).subscribe();
-    const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+  const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/login`);
     expect(req.request.method).toBe('POST');
     req.flush({ token: 'tok' });
     expect(localStorage.getItem('token')).toBe('tok');

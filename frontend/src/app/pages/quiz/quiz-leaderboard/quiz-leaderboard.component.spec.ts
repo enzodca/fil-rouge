@@ -31,7 +31,7 @@ describe('QuizLeaderboardComponent', () => {
 
   it('charge le leaderboard et formate des valeurs', () => {
     fixture.detectChanges();
-    const req = http.expectOne(`${environment.apiUrl}/quiz/qid/leaderboard`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/quiz/qid/leaderboard`);
     req.flush({ quiz: { _id: 'qid' }, leaderboard: [{ position: 1 }], total_participants: 3 });
 
     expect(component.quiz._id).toBe('qid');
@@ -46,7 +46,7 @@ describe('QuizLeaderboardComponent', () => {
 
   it('gère l\'erreur de chargement', () => {
     fixture.detectChanges();
-    const req = http.expectOne(`${environment.apiUrl}/quiz/qid/leaderboard`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/quiz/qid/leaderboard`);
     req.flush({}, { status: 500, statusText: 'Err' });
     expect(component.loading).toBeFalse();
   });

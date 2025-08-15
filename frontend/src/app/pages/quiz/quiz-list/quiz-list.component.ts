@@ -26,7 +26,7 @@ export class QuizListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.http.get<any[]>(`${environment.apiUrl}/quiz/all`).subscribe({
+  this.http.get<any[]>(`${environment.apiBaseUrl}/quiz/all`).subscribe({
       next: data => (this.quizzes = data)
     });
   }
@@ -38,7 +38,7 @@ export class QuizListComponent implements OnInit {
   deleteQuiz(id: string) {
     this.notification.confirm('Supprimer ce quiz ?').subscribe(confirmed => {
       if (confirmed) {
-        this.http.delete(`${environment.apiUrl}/quiz/${id}`).subscribe({
+  this.http.delete(`${environment.apiBaseUrl}/quiz/${id}`).subscribe({
           next: () => {
             this.quizzes = this.quizzes.filter(q => q._id !== id);
             this.notification.showSuccess('Quiz supprimé');
@@ -52,7 +52,7 @@ export class QuizListComponent implements OnInit {
   inviteUser(quizId: string) {
     const email = prompt('Email à inviter ?');
     if (!email) return;
-    this.http.put(`${environment.apiUrl}/quiz/${quizId}/invite`, { email }).subscribe({
+  this.http.put(`${environment.apiBaseUrl}/quiz/${quizId}/invite`, { email }).subscribe({
       next: () => this.notification.showSuccess('Utilisateur invité'),
       error: err => this.notification.showError('Erreur : ' + (err.error?.message || 'Erreur inconnue'))
     });

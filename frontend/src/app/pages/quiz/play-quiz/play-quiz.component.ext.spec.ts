@@ -136,7 +136,7 @@ describe('PlayQuizComponent (extended)', () => {
     const dataQ = { audio_url: 'data:audio/mp3;base64,xxx' } as any;
     expect(component.getAudioUrl(dataQ)).toBe('data:audio/mp3;base64,xxx');
     const pathQ = { audio_url: '/files/a.mp3' } as any;
-    const base = environment.apiUrl.replace('/api', '');
+  const base = environment.apiBaseUrl.replace('/api', '');
     expect(component.getAudioUrl(pathQ)).toBe(base + '/files/a.mp3');
     expect(component.getAudioUrl(null as any)).toBe('');
   });
@@ -196,13 +196,13 @@ describe('PlayQuizComponent (extended)', () => {
     component.questions = [{}, {}] as any;
     component.score = 2;
     component.submitResult(12);
-    const req1 = http.expectOne(`${environment.apiUrl}/quiz/result`);
+  const req1 = http.expectOne(`${environment.apiBaseUrl}/quiz/result`);
     expect(req1.request.method).toBe('POST');
     req1.flush({ isFirstAttempt: true });
     expect(notif.showSuccess).toHaveBeenCalled();
 
     component.submitResult(13);
-    const req2 = http.expectOne(`${environment.apiUrl}/quiz/result`);
+  const req2 = http.expectOne(`${environment.apiBaseUrl}/quiz/result`);
     req2.flush({ isFirstAttempt: false });
     expect(notif.showInfo).toHaveBeenCalled();
   });

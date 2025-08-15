@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  detect-projects:
+    runs-on: ubuntu-latest
+    outputs:
+      has-frontend: ${{ steps.detect.outputs.has-frontend }}
+      has-backend: ${{ steps.detect.outputs.has-backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: detect
+        run: |
+          if [ -f frontend/angular.json ]; then echo "has-frontend=true" >> $GITHUB_OUTPUT; else echo "has-frontend=false" >> $GITHUB_OUTPUT; fi
+          if node -e "const p=require('./backend/package.json');console.log(!!(p.dependencies && p.dependencies.express))" | grep -q true; then echo "has-backend=true" >> $GITHUB_OUTPUT; else echo "has-backend=false" >> $GITHUB_OUTPUT; fi
+  backend:
+    needs: detect-projects
+    if: needs.detect-projects.outputs.has-backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package.json
+      - run: npm ci
+      - run: npm test -- --runInBand
+  frontend:
+    needs: detect-projects
+    if: needs.detect-projects.outputs.has-frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package.json
+      - run: npm ci
+      - run: npm run build

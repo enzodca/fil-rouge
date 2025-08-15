@@ -29,7 +29,7 @@ export interface UserOrganizationState {
 export class OrganizationService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private API_URL = `${environment.apiUrl}/organization`;
+  private API_URL = `${environment.apiBaseUrl}/organization`;
 
   private userOrganizationState = new BehaviorSubject<UserOrganizationState>({
     organizationId: null,

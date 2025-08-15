@@ -17,7 +17,7 @@ describe('StripeService', () => {
   TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
   httpMock = TestBed.inject(HttpTestingController);
   service = TestBed.inject(StripeService);
-  httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
   expect(service).toBeTruthy();
   });
 
@@ -30,7 +30,7 @@ describe('StripeService', () => {
     };
 
     const s = TestBed.inject(StripeService);
-    const initReq = httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`);
+  const initReq = httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`);
     initReq.flush({ success: true, publishableKey: 'pk_test_dummy' });
 
     s.getPublicKey().subscribe(response => {
@@ -38,7 +38,7 @@ describe('StripeService', () => {
       expect(response.publishableKey).toBe('pk_test_example');
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`);
+  const req = httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`);
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
@@ -60,14 +60,14 @@ describe('StripeService', () => {
     };
 
   const s = TestBed.inject(StripeService);
-  httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
 
   s.createCheckoutSession(mockRequest).subscribe(response => {
       expect(response.success).toBe(true);
       expect(response.sessionId).toBe('cs_test_example');
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/stripe/create-checkout-session`);
+  const req = httpMock.expectOne(`${environment.apiBaseUrl}/stripe/create-checkout-session`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(mockRequest);
     req.flush(mockResponse);
@@ -88,14 +88,14 @@ describe('StripeService', () => {
     };
 
   const s = TestBed.inject(StripeService);
-  httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
 
   s.createPaymentIntent(mockRequest).subscribe(response => {
       expect(response.success).toBe(true);
       expect(response.clientSecret).toBe('pi_test_example_secret');
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/stripe/create-payment-intent`);
+  const req = httpMock.expectOne(`${environment.apiBaseUrl}/stripe/create-payment-intent`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(mockRequest);
     req.flush(mockResponse);
@@ -105,7 +105,7 @@ describe('StripeService', () => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
     httpMock = TestBed.inject(HttpTestingController);
     const s = TestBed.inject(StripeService);
-    httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
     expect(s.formatAmountForStripe(25.50)).toBe(2550);
     expect(s.formatAmountForStripe(10)).toBe(1000);
     expect(s.formatAmountForStripe(0.99)).toBe(99);
@@ -115,7 +115,7 @@ describe('StripeService', () => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
     httpMock = TestBed.inject(HttpTestingController);
     const s = TestBed.inject(StripeService);
-    httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
     expect(s.formatAmountFromStripe(2550)).toBe(25.50);
     expect(s.formatAmountFromStripe(1000)).toBe(10);
     expect(s.formatAmountFromStripe(99)).toBe(0.99);
@@ -125,7 +125,7 @@ describe('StripeService', () => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
     httpMock = TestBed.inject(HttpTestingController);
   service = TestBed.inject(StripeService);
-  httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({}, { status: 500, statusText: 'Err' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({}, { status: 500, statusText: 'Err' });
   (service as any).stripePromise = Promise.resolve(null);
   await expectAsync(service.redirectToCheckout('sess_1')).toBeRejectedWithError("Stripe n'a pas pu être initialisé");
   });
@@ -134,7 +134,7 @@ describe('StripeService', () => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
     httpMock = TestBed.inject(HttpTestingController);
   service = TestBed.inject(StripeService);
-  httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
   const redirectSpy = jasmine.createSpy('redirectToCheckout').and.resolveTo({});
   (service as any).stripePromise = Promise.resolve({ redirectToCheckout: redirectSpy } as any);
 
@@ -148,7 +148,7 @@ describe('StripeService', () => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
     httpMock = TestBed.inject(HttpTestingController);
     service = TestBed.inject(StripeService);
-    httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({}, { status: 500, statusText: 'Err' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({}, { status: 500, statusText: 'Err' });
     (service as any).stripePromise = Promise.resolve(null);
     await expectAsync(service.confirmPayment('sec', {} as any)).toBeRejectedWithError("Stripe n'a pas pu être initialisé");
 
@@ -164,7 +164,7 @@ describe('StripeService', () => {
     httpMock = TestBed.inject(HttpTestingController);
 
   let s = TestBed.inject(StripeService);
-  httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({}, { status: 500, statusText: 'Err' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({}, { status: 500, statusText: 'Err' });
   (s as any).stripePromise = Promise.resolve(null);
   expect(await s.createElement()).toBeNull();
 
@@ -176,12 +176,12 @@ describe('StripeService', () => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [StripeService] });
     httpMock = TestBed.inject(HttpTestingController);
     const s = TestBed.inject(StripeService);
-    httpMock.expectOne(`${environment.apiUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
+  httpMock.expectOne(`${environment.apiBaseUrl}/stripe/public-key`).flush({ success: true, publishableKey: 'pk_test_dummy' });
     s.getPaymentSession('sess_123').subscribe(r => {
       expect(r.success).toBeTrue();
       expect(r.session).toEqual({ id: 'sess_123' } as any);
     });
-    const req = httpMock.expectOne(`${environment.apiUrl}/stripe/session/sess_123`);
+  const req = httpMock.expectOne(`${environment.apiBaseUrl}/stripe/session/sess_123`);
     expect(req.request.method).toBe('GET');
     req.flush({ success: true, session: { id: 'sess_123' } });
   });

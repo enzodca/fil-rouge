@@ -38,7 +38,7 @@ describe('OrganizationService (extended)', () => {
     service.createOrganization('New').subscribe(r => {
       expect(r.organization._id).toBe('org2');
     });
-    const req = http.expectOne(`${environment.apiUrl}/organization`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/organization`);
     expect(req.request.method).toBe('POST');
     req.flush(resp);
     expect(localStorage.getItem('token')).toBe('t');
@@ -53,7 +53,7 @@ describe('OrganizationService (extended)', () => {
 
   it('getOrganizationById valide l’ID et appelle le backend', () => {
     service.getOrganizationById('0123456789abcdef01234567').subscribe();
-    const req = http.expectOne(`${environment.apiUrl}/organization/0123456789abcdef01234567`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/organization/0123456789abcdef01234567`);
     expect(req.request.method).toBe('GET');
     req.flush({ _id: 'x', name: 'N', members: [] });
   });
@@ -67,27 +67,27 @@ describe('OrganizationService (extended)', () => {
 
   it('inviteToOrganization valide email et ID', () => {
     service.inviteToOrganization('0123456789abcdef01234567', 'a@a.com').subscribe();
-    const req = http.expectOne(`${environment.apiUrl}/organization/0123456789abcdef01234567/invite`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/organization/0123456789abcdef01234567/invite`);
     expect(req.request.method).toBe('PUT');
     req.flush({ message: 'ok' });
   });
 
   it('updateOrganizationName met à jour l’état utilisateur', () => {
     service.updateOrganizationName('0123456789abcdef01234567', 'Renamed').subscribe();
-    const req = http.expectOne(`${environment.apiUrl}/organization/0123456789abcdef01234567`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/organization/0123456789abcdef01234567`);
     req.flush({ message: 'ok', organization: { _id: '0123456789abcdef01234567', name: 'Renamed', members: [] } });
   });
 
   it('deleteOrganization supprime et met à jour token', () => {
     service.deleteOrganization('0123456789abcdef01234567').subscribe();
-    const req = http.expectOne(`${environment.apiUrl}/organization/0123456789abcdef01234567`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/organization/0123456789abcdef01234567`);
     req.flush({ message: 'deleted', token: 'newtok' });
     expect(localStorage.getItem('token')).toBe('newtok');
   });
 
   it('leaveOrganization met à jour token si fourni', () => {
     service.leaveOrganization().subscribe();
-    const req = http.expectOne(`${environment.apiUrl}/organization/leave`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/organization/leave`);
     expect(req.request.method).toBe('PUT');
     req.flush({ message: 'left', token: 't2' });
     expect(localStorage.getItem('token')).toBe('t2');

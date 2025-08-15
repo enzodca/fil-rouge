@@ -1,9 +1,15 @@
-FROM node:20 AS builder
-WORKDIR /app
-COPY . .
-RUN npm install
-RUN npm run build --configuration=production
+FROM node:20
 
-FROM nginx:alpine
-COPY --from=builder /app/dist/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+EXPOSE 4200
+
+ENV NG_CLI_ANALYTICS=false
+
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--poll", "2000"]

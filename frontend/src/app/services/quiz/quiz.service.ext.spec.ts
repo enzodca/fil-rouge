@@ -22,7 +22,7 @@ describe('QuizService (extended)', () => {
     service.getStats().subscribe(res => {
       expect(res).toEqual(mock);
     });
-    const req = http.expectOne(`${environment.apiUrl}/quiz/stats`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/quiz/stats`);
     expect(req.request.method).toBe('GET');
     req.flush(mock);
   });
@@ -30,7 +30,7 @@ describe('QuizService (extended)', () => {
   it('createQuiz envoie le payload', () => {
     const payload = { title: 'T', questions: [] } as any;
     service.createQuiz(payload).subscribe();
-    const req = http.expectOne(`${environment.apiUrl}/quiz/create`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/quiz/create`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
     req.flush({});

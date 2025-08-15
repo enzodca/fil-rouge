@@ -35,7 +35,7 @@ export interface StripeResponse {
 export class StripeService {
   private stripe: Stripe | null = null;
   private stripePromise: Promise<Stripe | null>;
-  private readonly apiUrl = environment.apiUrl + '/stripe';
+  private readonly apiUrl = environment.apiBaseUrl + '/stripe';
 
   constructor(private http: HttpClient) {
     this.stripePromise = this.initializeStripe();

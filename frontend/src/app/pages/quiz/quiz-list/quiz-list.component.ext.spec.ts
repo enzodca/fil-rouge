@@ -37,9 +37,9 @@ describe('QuizListComponent (extended)', () => {
 
   it('charge la liste et supprime un quiz', () => {
     fixture.detectChanges();
-    http.expectOne(`${environment.apiUrl}/quiz/all`).flush([ { _id: 'q1', creator_id: { _id: 'u1' } } ]);
+  http.expectOne(`${environment.apiBaseUrl}/quiz/all`).flush([ { _id: 'q1', creator_id: { _id: 'u1' } } ]);
     component.deleteQuiz('q1');
-    const del = http.expectOne(`${environment.apiUrl}/quiz/q1`);
+  const del = http.expectOne(`${environment.apiBaseUrl}/quiz/q1`);
     expect(del.request.method).toBe('DELETE');
     del.flush({});
   });
@@ -59,7 +59,7 @@ describe('QuizListComponent (extended)', () => {
     const notif = TestBed.inject(NotificationService) as unknown as NotificationMock;
     spyOn(window, 'prompt').and.returnValue('a@b.com');
     component.inviteUser('q1');
-    const req = http.expectOne(`${environment.apiUrl}/quiz/q1/invite`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/quiz/q1/invite`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual({ email: 'a@b.com' });
     req.flush({});
@@ -69,14 +69,14 @@ describe('QuizListComponent (extended)', () => {
   it("inviteUser n'appelle pas l'API quand prompt est annulé", () => {
     spyOn(window, 'prompt').and.returnValue(null as any);
     component.inviteUser('q1');
-  http.expectNone(`${environment.apiUrl}/quiz/q1/invite`);
+  http.expectNone(`${environment.apiBaseUrl}/quiz/q1/invite`);
   });
 
   it('inviteUser gère une erreur HTTP', () => {
     const notif = TestBed.inject(NotificationService) as unknown as NotificationMock;
     spyOn(window, 'prompt').and.returnValue('x@y.z');
     component.inviteUser('q2');
-    const req = http.expectOne(`${environment.apiUrl}/quiz/q2/invite`);
+  const req = http.expectOne(`${environment.apiBaseUrl}/quiz/q2/invite`);
     req.flush({ message: 'pas trouvé' }, { status: 404, statusText: 'Not Found' });
     expect(notif.showError).toHaveBeenCalled();
   });

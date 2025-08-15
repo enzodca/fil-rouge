@@ -85,7 +85,7 @@ export class CreateQuizComponent implements OnInit, OnDestroy {
   }
 
   private authMe() {
-    return this.auth['http'].get<any>(`${environment.apiUrl}/auth/me`);
+    return this.auth['http'].get<any>(`${environment.apiBaseUrl}/auth/me`);
   }
 
   private handleNotConnected() {
