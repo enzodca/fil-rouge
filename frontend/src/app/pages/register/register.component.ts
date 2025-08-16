@@ -106,7 +106,7 @@ export class RegisterComponent {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
-    const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\|;'/`~]/.test(password);
     const hasMinLength = password.length >= 8;
 
     const score = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChars, hasMinLength].filter(Boolean).length;

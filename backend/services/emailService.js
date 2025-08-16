@@ -150,6 +150,54 @@ class EmailService {
       return { success: false, error: error.message };
     }
   }
+
+  async sendPasswordResetEmail(email, username, resetToken) {
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? (process.env.FRONTEND_ORIGIN?.split(',')[0] || '')
+      : (process.env.FRONTEND_ORIGIN?.split(',')[0] || 'http://localhost:4200');
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Réinitialisation de votre mot de passe',
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+          <div style="background: linear-gradient(135deg, #f6d365, #fda085); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">Réinitialisation du mot de passe</h1>
+          </div>
+          <div style="padding: 30px; background-color: #f9f9f9;">
+            <p style="color: #666; line-height: 1.6;">
+              Bonjour ${username},
+              <br/><br/>
+              Nous avons reçu une demande de réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe:
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetUrl}" style="background: linear-gradient(135deg, #f6d365, #fda085); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">Réinitialiser mon mot de passe</a>
+            </div>
+            <p style="color: #999; font-size: 14px;">
+              Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br/>
+              <a href="${resetUrl}" style="color: #f6d365;">${resetUrl}</a>
+            </p>
+            <p style="color: #999; font-size: 12px; margin-top: 30px;">
+              Ce lien expirera dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.
+            </p>
+          </div>
+          <div style="background-color: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+            <p style="margin: 0;">© 2025 Votre Application. Tous droits réservés.</p>
+          </div>
+        </div>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Erreur envoi e-mail de réinitialisation:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 module.exports = new EmailService();

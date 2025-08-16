@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   verificationMessage = '';
   emailToVerify = '';
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
@@ -64,7 +65,16 @@ export class LoginComponent implements OnInit {
           this.showResendEmail = true;
           this.notification.showError('Veuillez vérifier votre e-mail avant de vous connecter');
         } else {
-          this.notification.showError('Erreur : ' + (err.error?.message || 'Erreur inconnue'));
+          const apiMessage = err.error?.message;
+          const validationErrors = err.error?.errors;
+          if (validationErrors?.length) {
+            const msg = validationErrors.map((e: any) => `${e.field}: ${e.message}`).join(' | ');
+            this.notification.showError(msg);
+          } else if (apiMessage) {
+            this.notification.showError(apiMessage);
+          } else {
+            this.notification.showError('Identifiants invalides');
+          }
         }
       }
     });
@@ -86,5 +96,9 @@ export class LoginComponent implements OnInit {
         this.notification.showError(err.error?.message || 'Erreur lors du renvoi');
       }
     });
+  }
+
+  togglePasswordVisibility() {
+    this.hidePassword = !this.hidePassword;
   }
 }

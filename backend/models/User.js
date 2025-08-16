@@ -73,6 +73,16 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: {
     type: Date
   },
+  resetPasswordToken: {
+    type: String,
+    index: true
+  },
+  resetPasswordExpires: {
+    type: Date
+  },
+  passwordResetRequestedAt: {
+    type: Date
+  },
 
   created_at: { 
     type: Date, 
@@ -94,6 +104,7 @@ userSchema.index({ email: 1, isEmailVerified: 1 });
 userSchema.index({ emailVerificationToken: 1, emailVerificationExpires: 1 });
 userSchema.index({ lastLoginAt: 1 });
 userSchema.index({ accountLockedUntil: 1 });
+userSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
 
 userSchema.methods.isAccountLocked = function() {
   return !!(this.accountLockedUntil && this.accountLockedUntil > Date.now());
@@ -134,6 +145,8 @@ userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;
   delete user.emailVerificationToken;
+  delete user.resetPasswordToken;
+  delete user.resetPasswordExpires;
   delete user.failedLoginAttempts;
   delete user.accountLockedUntil;
   delete user.registrationIP;

@@ -39,6 +39,18 @@ export class AuthService {
     return this.http.post<any>(`${this.API_URL}/resend-verification`, { email });
   }
 
+  forgotPassword(email: string) {
+    return this.http.post<any>(`${this.API_URL}/forgot-password`, { email });
+  }
+
+  validateResetToken(token: string) {
+    return this.http.get<any>(`${this.API_URL}/validate-reset-token?token=${token}`);
+  }
+
+  resetPassword(token: string, password: string) {
+    return this.http.post<any>(`${this.API_URL}/reset-password`, { token, password });
+  }
+
   login(data: { email: string; password: string }) {
     return this.http.post<{ token: string }>(`${this.API_URL}/login`, data).pipe(
       tap(res => {
