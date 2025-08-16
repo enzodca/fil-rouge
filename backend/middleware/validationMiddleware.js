@@ -35,7 +35,7 @@ const validateRegister = [
   body('password')
     .isLength({ min: 8, max: 128 })
     .withMessage('Le mot de passe doit contenir entre 8 et 128 caractères')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+  .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\|;'/`~]).+/)
     .withMessage('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'),
   
   handleValidationErrors
@@ -62,6 +62,28 @@ const validateEmail = [
     .normalizeEmail()
     .withMessage('Adresse email invalide'),
   
+  handleValidationErrors
+];
+
+const validateForgotPassword = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Adresse email invalide'),
+  handleValidationErrors
+];
+
+const validateResetPassword = [
+  body('token')
+    .isLength({ min: 32, max: 256 })
+    .withMessage('Token invalide')
+    .matches(/^[a-zA-Z0-9]+$/)
+    .withMessage('Le token contient des caractères invalides'),
+  body('password')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Le mot de passe doit contenir entre 8 et 128 caractères')
+  .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\|;'/`~]).+/)
+    .withMessage('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'),
   handleValidationErrors
 ];
 
@@ -189,6 +211,8 @@ module.exports = {
   validateRegister,
   validateLogin,
   validateEmail,
+  validateForgotPassword,
+  validateResetPassword,
   validateOrganization,
   validateQuiz,
   validateMongoId,
