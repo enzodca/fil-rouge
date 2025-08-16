@@ -42,7 +42,7 @@ export interface Answer {
 @Injectable({ providedIn: 'root' })
 export class QuizService {
   private http = inject(HttpClient);
-  private API_URL = `${environment.apiUrl}/quiz`;
+  private API_URL = `${environment.apiBaseUrl}/quiz`;
 
 
   createQuiz(quiz: Partial<Quiz>): Observable<{ message: string; quizId: string }> {

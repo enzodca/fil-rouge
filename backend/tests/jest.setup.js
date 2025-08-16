@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'testsecretjwt';
 process.env.RATE_LIMIT_WINDOW_MS = '60000';
 process.env.RATE_LIMIT_MAX_REQUESTS = '1000';
-process.env.FRONTEND_URL_LOCAL = 'http://localhost:4200';
+process.env.FRONTEND_ORIGIN = 'http://localhost:4200';
 process.env.STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_dummy';
 process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy';
 

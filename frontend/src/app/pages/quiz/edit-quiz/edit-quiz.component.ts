@@ -67,7 +67,7 @@ export class EditQuizComponent implements OnInit, OnDestroy {
       ? this.authUserInfo()
       : null;
     
-    this.http.get<any>(`${environment.apiUrl}/quiz/${this.quizId}`).subscribe({
+  this.http.get<any>(`${environment.apiBaseUrl}/quiz/${this.quizId}`).subscribe({
       next: data => {
         this.form.patchValue({
           title: data.title,
@@ -104,7 +104,7 @@ export class EditQuizComponent implements OnInit, OnDestroy {
   }
 
   private authMe() {
-    return this.http.get<any>(`${environment.apiUrl}/auth/me`);
+  return this.http.get<any>(`${environment.apiBaseUrl}/auth/me`);
   }
 
   get questions(): FormArray {
@@ -345,7 +345,7 @@ export class EditQuizComponent implements OnInit, OnDestroy {
         }
       }
 
-      this.http.put(`${environment.apiUrl}/quiz/${this.quizId}`, quizData).subscribe({
+  this.http.put(`${environment.apiBaseUrl}/quiz/${this.quizId}`, quizData).subscribe({
         next: () => {
           this.audioFiles.forEach((audioData) => {
             URL.revokeObjectURL(audioData.url);

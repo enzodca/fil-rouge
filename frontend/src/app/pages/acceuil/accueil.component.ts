@@ -24,7 +24,7 @@ export class AccueilComponent implements OnInit {
   private quizService = inject(QuizService);
 
   ngOnInit(): void {
-    this.http.get<any>(`${environment.apiUrl}/auth/me`).subscribe({
+  this.http.get<any>(`${environment.apiBaseUrl}/auth/me`).subscribe({
       next: user => this.user = user,
       error: () => this.router.navigate(['/login'])
     });

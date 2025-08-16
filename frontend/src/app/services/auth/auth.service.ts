@@ -18,7 +18,7 @@ export interface JwtPayload {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private API_URL = `${environment.apiUrl}/auth`;
+  private API_URL = `${environment.apiBaseUrl}/auth`;
 
   constructor(
   ) {}

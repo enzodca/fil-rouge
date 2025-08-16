@@ -3,6 +3,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const compression = require('compression');
+dotenv.config();
+const env = require('./env');
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
@@ -18,14 +20,20 @@ const {
 
 const logger = require('./middleware/securityLogger');
 
-dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 
+const allowedOrigins = (env.FRONTEND_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL_PRODUCTION] 
-    : [process.env.FRONTEND_URL_LOCAL, 'http://127.0.0.1:4200'],
+  origin: (origin, callback) => {
+    const isDev = env.NODE_ENV !== 'production';
+    const localWhitelist = ['http://localhost:4200', 'http://127.0.0.1:4200'];
+    if (!origin) return callback(null, true);
+    if (isDev && (localWhitelist.includes(origin) || allowedOrigins.includes(origin))) return callback(null, true);
+    if (!isDev && allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -75,12 +83,10 @@ const mongoOptions = {
   socketTimeoutMS: 45000,
   maxIdleTimeMS: 30000,
   bufferCommands: false,
-  autoIndex: process.env.NODE_ENV !== 'production'
+  autoIndex: env.NODE_ENV !== 'production'
 };
 
-const mongoURI = process.env.NODE_ENV === 'production' 
-  ? process.env.MONGO_URI_ATLAS 
-  : process.env.MONGO_URI;
+const mongoURI = env.MONGODB_URI;
 
 if (process.env.NODE_ENV !== 'test') {
   mongoose.connect(mongoURI, mongoOptions)
@@ -146,6 +152,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/stripe', stripeRoutes);
+
+app.get('/healthz', (req, res) => res.status(200).json({ ok: true }));
 
 app.get('/api/health', (req, res) => {
   res.json({

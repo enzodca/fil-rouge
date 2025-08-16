@@ -57,7 +57,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     this.quizId = this.route.snapshot.paramMap.get('id') || '';
     this.quizStartTime = Date.now();
-    this.http.get<any>(`${environment.apiUrl}/quiz/${this.quizId}`).subscribe({
+  this.http.get<any>(`${environment.apiBaseUrl}/quiz/${this.quizId}`).subscribe({
       next: data => {
         this.quiz = data;
         this.questions = data.questions;
@@ -217,7 +217,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
       if (question.audio_url.startsWith('data:')) {
         return question.audio_url;
       }
-      return `${environment.apiUrl.replace('/api', '')}${question.audio_url}`;
+  return `${environment.apiBaseUrl.replace('/api', '')}${question.audio_url}`;
     }
     return '';
   }
@@ -351,7 +351,7 @@ export class PlayQuizComponent implements OnInit, OnDestroy, AfterViewInit {
       timeTaken: timeTaken
     };
 
-    this.http.post(`${environment.apiUrl}/quiz/result`, resultData).subscribe({
+  this.http.post(`${environment.apiBaseUrl}/quiz/result`, resultData).subscribe({
       next: (response: any) => {
         if (response.isFirstAttempt) {
           this.notification.showSuccess('Score enregistré pour le classement !');

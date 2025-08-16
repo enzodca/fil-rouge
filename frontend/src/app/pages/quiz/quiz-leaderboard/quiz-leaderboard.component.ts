@@ -36,7 +36,7 @@ export class QuizLeaderboardComponent implements OnInit {
   }
 
   loadLeaderboard(quizId: string): void {
-    this.http.get<any>(`${environment.apiUrl}/quiz/${quizId}/leaderboard`).subscribe({
+  this.http.get<any>(`${environment.apiBaseUrl}/quiz/${quizId}/leaderboard`).subscribe({
       next: (data) => {
         this.quiz = data.quiz;
         this.leaderboard = data.leaderboard;

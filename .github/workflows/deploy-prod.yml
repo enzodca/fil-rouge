@@ -1,0 +1,62 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: ["prod"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect frontend dist path
+        id: detect
+        run: |
+          echo "Reading angular.json..."
+          DIST=$(node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('frontend/angular.json','utf8'));const out=j.projects.frontend.architect.build.options.outputPath;console.log(out)")
+          echo distPath=$DIST >> $GITHUB_OUTPUT
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Angular deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Inject API Base URL
+        working-directory: frontend
+        run: |
+          sed -i "s#__API_BASE_URL__#${{ secrets.API_BASE_URL }}#g" src/environments/environment.prod.ts
+
+      - name: Build Angular (production)
+        working-directory: frontend
+        run: npm run build
+
+      - name: Compute publish directory
+        id: pub
+        working-directory: frontend
+        run: |
+          DIST=${{ steps.detect.outputs.distPath }}
+          if [ -d "$DIST/browser" ]; then echo publishDir=$DIST/browser >> $GITHUB_OUTPUT; else echo publishDir=$DIST >> $GITHUB_OUTPUT; fi
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy to Netlify
+        working-directory: frontend
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: netlify deploy --dir=${{ steps.pub.outputs.publishDir }} --prod
+
+      - name: Deploy backend to Render
+        uses: JorgeLNJunior/render-deploy@v1.4.5
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          clear_cache: false
+          wait_deploy: true

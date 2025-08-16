@@ -1,176 +1,175 @@
 # QUIZZ GAME MNS
 
-Plateforme SaaS de QCM personnalisés — Front Angular, API Node/Express, MongoDB, packagée avec Docker.
+Plateforme de quiz avec Front Angular 19, API Node/Express, MongoDB, packagée avec Docker et déployée via GitHub Actions sur Netlify (front) et Render (API).
 
----
+## Sommaire
 
-## Vue d’ensemble
+- Stack et structure
+- Démarrage local (Docker et sans Docker)
+- Configuration des variables d’environnement
+- Sécurité et endpoints santé
+- Tests
+- CI/CD et déploiement (Netlify + Render)
+- Dépannage rapide (FAQ)
 
-- Création/gestion d’organisations, utilisateurs, quiz et questions
-- Authentification JWT, validation, protections OWASP (helmet, rate limit, hpp, xss)
-- Paiement Stripe (donations), envoi email (Nodemailer)
-- Tests unitaires et d’intégration avec Jest + Supertest + Mongo Memory Server
+## Stack et structure
 
----
-
-## Architecture
-
-- frontend: Angular 19 servi par Nginx en container
-- backend: Node.js/Express (MVC) + Mongoose
-- mongo: base de données MongoDB (container) ou Atlas
-- Orchestration: docker-compose
+- frontend: Angular 19, servi par Nginx en prod; SPA redirects via `src/_redirects`
+- backend: Node.js/Express + Mongoose; protections helmet, rate limit, hpp, xss
+- mongo: service Docker local ou MongoDB Atlas en prod
+- orchestration: docker-compose
 
 Arborescence (extrait):
 
 ```
 backend/          # API Express, tests Jest
-frontend/         # Application Angular + Nginx
-docker-compose.yml
+frontend/         # Angular app + Nginx
+.github/workflows # CI (build/tests) + déploiement prod
 ```
 
----
+## Démarrage local
 
-## Prérequis
+Pré-requis: Node 18+, npm, Docker Desktop.
 
-- Node.js 18+ et npm (pour dev local)
-- Docker Desktop (Windows/macOS/Linux) et Docker Compose
-- Clés Stripe (test) si vous activez les paiements
-- Compte email (ex: Gmail) si vous activez l’envoi de mails
+### Option A — Docker (recommandé)
 
----
+1) À la racine, créez `.env` pour Mongo Docker:
 
-## Configuration des variables d’environnement
-
-1) À la racine du projet, créez un fichier `.env` (utilisé par docker-compose pour le service `mongo`):
-
-```
+```cmd
 MONGO_INITDB_ROOT_USERNAME=root
 MONGO_INITDB_ROOT_PASSWORD=example
 ```
 
-2) Dans `backend/.env`, copiez/adapter depuis `backend/.env.example`:
+2) Dans `backend/.env` (non committé), configurez votre API (exemple ci-dessous).
+3) Lancez les services:
 
-```
-PORT=3000
-
-# Connexion Mongo (container local)
-MONGO_URI=mongodb://root:example@mongo:27017/quizzgame?authSource=admin
-
-# Option Atlas (si vous n’utilisez pas le container)
-MONGO_URI_ATLAS=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/
-
-# Auth
-JWT_SECRET=your_jwt_secret
-
-# Stripe
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-
-# Email
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password
-
-# Frontend URLs
-FRONTEND_URL_LOCAL=http://localhost:4200
-FRONTEND_URL_PRODUCTION=https://your-production-domain.com
-```
-
-Remarque: le fichier `.env` racine est distinct de `backend/.env`. Le premier alimente le container Mongo; le second configure l’API.
-
----
-
-## Démarrage rapide
-
-### Option A — Docker (recommandé)
-
-1) Créez les fichiers `.env` décrits ci-dessus
-2) À la racine du projet, lancez:
-
-```bash
-docker-compose up --build
+```cmd
+docker compose up -d --build
 ```
 
 Accès:
-- Frontend: http://localhost:4200
-- Backend: http://localhost:3000 (ex: /api/health)
-- MongoDB: localhost:27017
+- Front: http://localhost:4200
+- API: http://localhost:3000 (ex: GET /api/health ou /healthz)
+- Mongo: localhost:27017
 
-Arrêt des containers: `Ctrl + C` puis `docker-compose down` si besoin.
+Arrêt (optionnel):
 
-### Option B — Développement local (sans Docker)
+```cmd
+docker compose down
+```
+
+### Option B — Sans Docker
 
 Backend:
-```bash
+
+```cmd
 cd backend
-npm install
+npm ci
 npm run dev
 ```
 
 Frontend:
-```bash
+
+```cmd
 cd frontend
-npm install
+npm ci
 npm start
 ```
 
-Assurez-vous que `backend/.env` pointe vers une base Mongo joignable (locale ou Atlas). Par défaut, l’API écoute sur le port 3000 et le front sur 4200.
+Assurez-vous que `backend/.env` pointe vers une instance Mongo joignable.
 
----
+## Configuration des variables d’environnement
 
-## Scripts utiles
+Le backend valide la configuration via envalid (`backend/env.js`). Principales variables:
 
-Backend (`backend/package.json`):
-- `npm run dev` — démarre l’API avec nodemon
-- `npm start` — démarre l’API en production
-- `npm test` — lance Jest (runInBand)
-- `npm run test:watch` — mode watch
-- `npm run test:coverage` — couverture de tests
+Exemple `backend/.env` (développement local):
 
-Frontend (`frontend/package.json`):
-- `npm start` — `ng serve`
-- `npm run build` — build prod vers `dist`
-- `npm test` — tests Angular/Karma
+```ini
+PORT=3000
+# Mongo local (container docker "mongo")
+MONGODB_URI=mongodb://root:example@mongo:27017/quizzgame?authSource=admin
+# JWT (dev)
+JWT_SECRET=change_me_dev
+# Stripe (dev)
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+# Email (dev)
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+# CORS: origines autorisées (CSV)
+FRONTEND_ORIGIN=http://localhost:4200
+```
 
----
+Notes:
+- Utilisez `MONGODB_URI` unique (local ou Atlas). Les anciens `MONGO_URI`/`MONGO_URI_ATLAS` ne sont plus utilisés.
+- CORS se base sur `FRONTEND_ORIGIN` (CSV). En dev, localhost:4200 est autorisé par défaut.
+- Ne committez jamais `backend/.env` (déjà ignoré par `.gitignore`).
 
-## Tests backend
+Frontend:
+- `src/environments/environment.ts` (dev) utilise `apiBaseUrl` = `http://localhost:3000/api`.
+- `environment.prod.ts` contient un placeholder `__API_BASE_URL__` remplacé par la CI au build prod. Aucun secret n’est exposé côté front.
 
-La suite Jest couvre middlewares (auth, sécurité, validation, logger), modèles (User, Organization, Quiz, Question, Answer, QuizResult), services (email), routes/contrôleurs (auth, organization, quiz, stripe) et serveur (/api/health, 404).
+## Sécurité et endpoints santé
 
-Exécution:
+- Sécurité: helmet, rate limit (désactivé en test), hpp, xss, journaux sécurité, `app.set('trust proxy', 1)`.
+- CORS strict par `FRONTEND_ORIGIN` (CSV), différencié dev/prod.
+- Santé: `GET /healthz` (liveness) et `GET /api/health` (details).
 
-```bash
+## Tests
+
+Backend (Jest + Supertest):
+
+```cmd
 cd backend
-npm install
+npm ci
 npm test
 ```
 
-Modes:
-- Watch: `npm run test:watch`
-- Couverture: `npm run test:coverage` (rapports dans `backend/coverage`)
+Rapports: `backend/coverage/`.
+
+## CI/CD et déploiement (prod)
+
+Branche de production: `prod`.
+
+Workflows GitHub (`.github/workflows`):
+- `ci.yml`: sur chaque push/PR — installe, build (front) et teste (back), Node 20.
+- `deploy-prod.yml`: sur push vers `prod` — build Angular prod, déploie sur Netlify, puis déploie l’API sur Render (et attend la fin).
+
+Secrets requis (environnement GitHub « production »):
+- `API_BASE_URL`: URL publique de l’API avec suffixe `/api` (ex: `https://<service>.onrender.com/api`).
+- `NETLIFY_AUTH_TOKEN`: token personnel Netlify.
+- `NETLIFY_SITE_ID`: ID du site Netlify cible.
+- `RENDER_SERVICE_ID`: ID du service Render existant (API Node).
+- `RENDER_API_KEY`: API key Render.
+
+Configuration côté Render (dans le dashboard, pas besoin de `render.yaml`):
+- Dossier racine du service: `backend`.
+- Build command: `npm ci`.
+- Start command: `node server.js`.
+- Health check path: `/healthz`.
+- Variables d’env (production): `NODE_ENV=production`, `MONGODB_URI` (Atlas), `FRONTEND_ORIGIN` (origine Netlify, ex: `https://<site>.netlify.app`), `JWT_SECRET`, clés Stripe, credentials email, etc.
+
+Configuration côté Netlify (pas besoin de `netlify.toml`):
+- Le workflow déploie le dossier `dist/frontend` (ou `dist/frontend/browser`).
+- SPA redirects via `src/_redirects` (`/* /index.html 200`).
+- Vous pouvez aussi configurer build/publish dans l’UI, mais la CI utilise Netlify CLI + secrets.
+
+Aucun fichier `render.yaml` ni `netlify.toml` n’est requis si vos services sont déjà créés et configurés via leurs dashboards. Gardez une seule source de vérité (UI ou fichiers) pour éviter les conflits.
+
+## Dépannage rapide (FAQ)
+
+- CORS: 403 « Not allowed by CORS » → vérifier `FRONTEND_ORIGIN` (doit contenir l’URL Netlify exacte en prod).
+- Front affiche erreur API → vérifier `API_BASE_URL` (secret GitHub) et que la route `/api` est incluse.
+- SPA 404 sur Netlify → vérifier que `src/_redirects` est bien packagé (déjà dans `angular.json`).
+- Mongo connexion échoue en prod → valider `MONGODB_URI` Atlas dans Render; consulter les logs Render.
+- Port Render → l’API écoute `process.env.PORT` fourni par Render (fallback 3000 en local).
+
+## Push pour déployer
+
+1) Configurez les secrets GitHub (environnement « production ») listés ci-dessus.
+2) Assurez-vous que le service Render et le site Netlify existent.
+3) Pushez sur la branche `prod` pour déclencher `deploy-prod.yml`.
 
 ---
 
-## Sécurité
-
-- Headers et protections: helmet, hpp, xss, CORS, rate limit
-- Auth: JWT (bcrypt pour les mots de passe)
-- Logs sécurité et validation centralisée
-
----
-
-## Déploiement
-
-- Images Docker pour front (Nginx) et back (Node)
-- Variables d’environnement via fichiers `.env`
-- Remplacez `MONGO_URI` par votre URI Atlas en production si nécessaire
-
----
-
-## Aide & contributions
-
-Issues et PR bienvenues. Merci de décrire clairement le contexte, les étapes de repro et l’impact.
-
-—
-
-Enjoy the game ✨
+Licence: ISC
