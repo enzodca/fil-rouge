@@ -163,8 +163,12 @@
     border-radius: 12px !important;
     font-size: 1rem !important;
     margin-top: 1rem !important;
-    position: relative;
-    overflow: hidden;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1;
     transition: var(--transition) !important;
     
     &::before {
@@ -193,6 +197,11 @@
 
     .button-spinner {
       margin-right: 0.5rem;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      line-height: 1;
     }
   }
 }
@@ -261,6 +270,16 @@
   text-align: center;
   padding-top: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  
+  .forgot-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color .2s ease;
+    &:hover { text-decoration: underline; }
+  }
   
   .register-text {
     color: var(--text-secondary);

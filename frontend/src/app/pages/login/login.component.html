@@ -33,8 +33,11 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mot de passe</mat-label>
             <mat-icon matPrefix>lock</mat-icon>
-            <input matInput type="password" formControlName="password" required autocomplete="current-password"
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required autocomplete="current-password"
               placeholder="••••••••" />
+            <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()" [attr.aria-label]="hidePassword ? 'Afficher le mot de passe' : 'Masquer le mot de passe'">
+              <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
             <mat-error *ngIf="form.get('password')?.hasError('required')">
               Le mot de passe est requis
             </mat-error>
@@ -66,6 +69,7 @@
       </div>
 
       <div class="register-section">
+        <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
         <p class="register-text">Vous n'avez pas encore de compte ?</p>
         <a routerLink="/register">
           <button mat-stroked-button class="register-button">
